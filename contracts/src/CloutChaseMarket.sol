@@ -66,7 +66,7 @@ contract CloutChaseMarket {
     mapping(uint256 => mapping(address => Position)) private _positions;
     mapping(uint256 => address[]) private _participants;
     mapping(address => uint256[]) private _userMarkets;
-    mapping(address => bool) private _hasJoined0; // placeholder to keep layout stable
+    
 
     // trader stats used by the leaderboard
     mapping(address => uint256) public totalStaked;
