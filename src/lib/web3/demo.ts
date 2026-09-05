@@ -81,9 +81,9 @@ function seed(): DemoState {
   return {
     markets,
     positions: {
-      "1:" + DEMO_WALLET.toLowerCase(): { yes: e18(250), no: 0n, claimed: false },
-      "4:" + DEMO_WALLET.toLowerCase(): { yes: e18(400), no: 0n, claimed: false },
-      "5:" + DEMO_WALLET.toLowerCase(): { yes: 0n, no: e18(150), claimed: true },
+      [`1:${DEMO_WALLET.toLowerCase()}`]: { yes: e18(250), no: 0n, claimed: false },
+      [`4:${DEMO_WALLET.toLowerCase()}`]: { yes: e18(400), no: 0n, claimed: false },
+      [`5:${DEMO_WALLET.toLowerCase()}`]: { yes: 0n, no: e18(150), claimed: true },
     },
     balances: { [DEMO_WALLET.toLowerCase()]: e18(2_500) },
     stats,
