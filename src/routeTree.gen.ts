@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CreateRouteImport } from './routes/create'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/leaderboard': typeof LeaderboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/leaderboard': typeof LeaderboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/leaderboard': typeof LeaderboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/create' | '/leaderboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/create' | '/leaderboard'
+  id: '__root__' | '/' | '/create' | '/leaderboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateRoute: typeof CreateRoute
+  LeaderboardRoute: typeof LeaderboardRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateRoute: CreateRoute,
+  LeaderboardRoute: LeaderboardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

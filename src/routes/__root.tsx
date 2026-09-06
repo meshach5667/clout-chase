@@ -11,6 +11,10 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { NetworkBanner } from "@/components/network-banner";
+import { Web3Provider } from "@/components/providers";
+import { SiteHeader } from "@/components/site-header";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -77,19 +81,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "CloutChase — attention prediction markets on Monad" },
+      {
+        name: "description",
+        content:
+          "Predict which posts, creators and trends win the next 24–48 hours with on-chain YES/NO markets on Monad.",
+      },
+      { name: "author", content: "CloutChase" },
+      { property: "og:title", content: "CloutChase — attention prediction markets on Monad" },
+      {
+        property: "og:description",
+        content: "On-chain YES/NO markets on social attention, settled by an oracle on Monad.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -119,8 +132,22 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <Web3Provider>
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <NetworkBanner />
+          <main className="flex-1">
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </main>
+          <footer className="border-t border-border/70 py-6">
+            <p className="mx-auto max-w-6xl px-4 text-xs text-muted-foreground">
+              CloutChase · parimutuel attention markets settled on Monad testnet. Test tokens only.
+            </p>
+          </footer>
+        </div>
+        <Toaster position="top-right" />
+      </Web3Provider>
     </QueryClientProvider>
   );
 }
