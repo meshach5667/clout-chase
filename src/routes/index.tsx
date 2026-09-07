@@ -58,36 +58,43 @@ function MarketsPage() {
 
   return (
     <div>
-      <section className="hero-surface border-b border-border/70">
-        <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-3 py-1 text-xs uppercase tracking-widest text-primary">
-            Live on Monad
-          </span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] md:text-6xl">
-            Trade the attention economy before it peaks.
-          </h1>
-          <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
-            Every market asks one question: will this post, creator or trend hit its attention
-            target in the next 24–48 hours? Stake CLOUT, watch the odds move, get paid on-chain.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="font-semibold">
-              <Link to="/create">
-                Create a market <ArrowRight className="ml-1 size-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="secondary">
-              <Link to="/leaderboard">See top traders</Link>
-            </Button>
+      <section className="hero-surface relative overflow-hidden border-b border-border/70">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24">
+          <div className="animate-fade-in">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              Live on Monad
+            </span>
+            <h1 className="mt-6 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
+              Trade attention
+              <br />
+              before it peaks.
+            </h1>
+            <p className="mt-5 max-w-md text-base text-muted-foreground">
+              Will this post, creator or trend hit its target in the next 24–48 hours? Stake CLOUT,
+              watch the odds move, get paid on-chain.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="font-medium">
+                <Link to="/create">
+                  Create a market <ArrowRight className="ml-1 size-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="font-medium">
+                <Link to="/leaderboard">See top traders</Link>
+              </Button>
+            </div>
+
+            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-6">
+              <Stat label="Open markets" value={String(liveCount)} />
+              <Stat label="Total staked" value={`${formatToken(volume, 0)}`} />
+              <Stat label="Settlement" value="On-chain" />
+            </dl>
           </div>
 
-          <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4">
-            <Stat label="Open markets" value={String(liveCount)} />
-            <Stat label="Total staked" value={`${formatToken(volume, 0)}`} />
-            <Stat label="Settlement" value="On-chain" />
-          </dl>
+          <HeroScene className="h-[280px] w-full md:h-[460px]" />
         </div>
       </section>
+
 
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
