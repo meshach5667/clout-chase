@@ -141,7 +141,7 @@ function Motes({ color }: { color: string }) {
   );
 }
 
-export default function HeroSceneImpl({ className }: { className?: string }) {
+export default function HeroSceneImpl({ className }: { className?: string | undefined }) {
   const [mounted, setMounted] = useState(false);
   const colors = useTokenColors();
 
