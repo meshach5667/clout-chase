@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Search } from "lucide-react";
 
+import { HeroScene } from "@/components/hero-scene";
 import { MarketCard, MarketCardSkeleton } from "@/components/market-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
