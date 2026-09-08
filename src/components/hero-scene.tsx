@@ -14,12 +14,17 @@ function useTokenColors() {
     const probe = document.createElement("span");
     probe.style.display = "none";
     document.body.appendChild(probe);
+    const ctx = document.createElement("canvas").getContext("2d");
     const read = (name: string, fallback: string) => {
-      probe.style.color = "";
       probe.style.color = `var(${name})`;
       const resolved = getComputedStyle(probe).color;
+      if (!ctx) return fallback;
       try {
-        return new THREE.Color(resolved).getStyle();
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = resolved;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        return new THREE.Color(r / 255, g / 255, b / 255).getStyle();
       } catch {
         return fallback;
       }
@@ -32,6 +37,7 @@ function useTokenColors() {
     probe.remove();
     setColors(next);
   }, []);
+
 
 
   return colors;
