@@ -11,22 +11,34 @@ function useTokenColors() {
   });
 
   useEffect(() => {
-    const styles = getComputedStyle(document.documentElement);
+    const probe = document.createElement("span");
+    probe.style.display = "none";
+    document.body.appendChild(probe);
+    const ctx = document.createElement("canvas").getContext("2d");
     const read = (name: string, fallback: string) => {
-      const raw = styles.getPropertyValue(name).trim();
-      if (!raw) return fallback;
+      probe.style.color = `var(${name})`;
+      const resolved = getComputedStyle(probe).color;
+      if (!ctx) return fallback;
       try {
-        return new THREE.Color(raw).getStyle();
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = resolved;
+        ctx.fillRect(0, 0, 1, 1);
+        const d = ctx.getImageData(0, 0, 1, 1).data;
+        return new THREE.Color((d[0] ?? 0) / 255, (d[1] ?? 0) / 255, (d[2] ?? 0) / 255).getStyle();
       } catch {
         return fallback;
       }
     };
-    setColors({
+    const next = {
       primary: read("--primary", "#a3e635"),
       surface: read("--surface-2", "#22242e"),
       muted: read("--muted-foreground", "#6b7280"),
-    });
+    };
+    probe.remove();
+    setColors(next);
   }, []);
+
+
 
   return colors;
 }
