@@ -19,6 +19,10 @@ export function WalletButton() {
   const [busy, setBusy] = useState(false);
 
   const handleConnect = async (connectorId?: string) => {
+    if (wallet.isMobileWithoutWallet && (!wallet.connectors || wallet.connectors.length === 0)) {
+      wallet.openMobileWalletModal();
+      return;
+    }
     setBusy(true);
     try {
       await wallet.connect(connectorId);

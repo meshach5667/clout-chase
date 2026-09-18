@@ -21,6 +21,7 @@ import type { Address } from "viem";
 import { marketAbi, tokenAbi } from "./abis";
 import { monadTestnet } from "./chains";
 import { contracts, contractsConfigured } from "./config";
+import { isMobileDevice, isMobileWithoutWallet, openMobileWalletModal } from "./mobile-wallet";
 import {
   DEMO_WALLET,
   demoBalance,
@@ -61,6 +62,11 @@ export function useWallet() {
         setDemoConnected(true);
         return;
       }
+      if (isMobileWithoutWallet() && connectors.length === 0) {
+        openMobileWalletModal();
+        return;
+      }
+
       const targetConnector =
         typeof connectorOverride === "string"
           ? connectors.find((c) => c.id === connectorOverride || c.uid === connectorOverride)
@@ -70,8 +76,13 @@ export function useWallet() {
             ) ??
             connectors[0]);
 
-      if (!targetConnector)
+      if (!targetConnector) {
+        if (isMobileDevice()) {
+          openMobileWalletModal();
+          return;
+        }
         throw new Error("No wallet detected. Install MetaMask or a Monad-ready wallet.");
+      }
 
       try {
         await connectAsync({ connector: targetConnector });
@@ -138,6 +149,9 @@ export function useWallet() {
       switchToMonad,
       hasInjectedWallet: true,
       connectors: [] as typeof connectors,
+      isMobile: isMobileDevice(),
+      isMobileWithoutWallet: isMobileWithoutWallet(),
+      openMobileWalletModal,
     };
   }
 
@@ -151,6 +165,9 @@ export function useWallet() {
     switchToMonad,
     hasInjectedWallet: connectors.length > 0,
     connectors,
+    isMobile: isMobileDevice(),
+    isMobileWithoutWallet: isMobileWithoutWallet(),
+    openMobileWalletModal,
   };
 }
 
