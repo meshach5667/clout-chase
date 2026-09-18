@@ -116,13 +116,11 @@
   --sidebar-border: oklch(0.3 0.024 275);
   --sidebar-ring: oklch(0.88 0.21 122);
 
-  --glow-primary: 0 0 0 1px oklch(0.88 0.21 122 / 0.35), 0 12px 40px -12px oklch(0.88 0.21 122 / 0.4);
+  --glow-primary:
+    0 0 0 1px oklch(0.88 0.21 122 / 0.35), 0 12px 40px -12px oklch(0.88 0.21 122 / 0.4);
   --glow-accent: 0 12px 40px -14px oklch(0.7 0.22 350 / 0.55);
-  --gradient-hero: radial-gradient(
-      120% 90% at 15% 0%,
-      oklch(0.7 0.22 350 / 0.22) 0%,
-      transparent 55%
-    ),
+  --gradient-hero:
+    radial-gradient(120% 90% at 15% 0%, oklch(0.7 0.22 350 / 0.22) 0%, transparent 55%),
     radial-gradient(90% 80% at 95% 10%, oklch(0.88 0.21 122 / 0.18) 0%, transparent 60%);
   --gradient-rail: linear-gradient(90deg, var(--yes) 0%, oklch(0.8 0.15 90) 50%, var(--no) 100%);
 }

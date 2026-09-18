@@ -121,7 +121,13 @@ function makeMarket(
 
 // ------------------------------------------------------------------ persistence
 
-type Serialized = { markets: unknown[]; positions: unknown; balances: unknown; stats: unknown; nextId: string };
+type Serialized = {
+  markets: unknown[];
+  positions: unknown;
+  balances: unknown;
+  stats: unknown;
+  nextId: string;
+};
 
 function replacer(_key: string, value: unknown) {
   return typeof value === "bigint" ? `${value.toString()}n` : value;
@@ -236,7 +242,11 @@ export function demoStake(marketId: bigint, isYes: boolean, amount: bigint, addr
   const key = `${marketId}:${address.toLowerCase()}`;
   const markets = state.markets.map((m) =>
     m.id === marketId
-      ? { ...m, yesPool: isYes ? m.yesPool + amount : m.yesPool, noPool: isYes ? m.noPool : m.noPool + amount }
+      ? {
+          ...m,
+          yesPool: isYes ? m.yesPool + amount : m.yesPool,
+          noPool: isYes ? m.noPool : m.noPool + amount,
+        }
       : m,
   );
   const prev = state.positions[key] ?? { yes: 0n, no: 0n, claimed: false };
@@ -299,8 +309,7 @@ export function demoClaim(marketId: bigint, address: string): bigint {
     if (winningStake > 0n) {
       const winPool = market.outcome === OUTCOME.Yes ? market.yesPool : market.noPool;
       const losePool = market.outcome === OUTCOME.Yes ? market.noPool : market.yesPool;
-      const distributable =
-        losePool - (losePool * (PROTOCOL_FEE_BPS + CREATOR_FEE_BPS)) / 10_000n;
+      const distributable = losePool - (losePool * (PROTOCOL_FEE_BPS + CREATOR_FEE_BPS)) / 10_000n;
       payout = winningStake + (distributable * winningStake) / winPool;
     }
   }

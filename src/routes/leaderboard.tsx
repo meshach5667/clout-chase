@@ -12,7 +12,8 @@ export const Route = createFileRoute("/leaderboard")({
       { title: "Leaderboard — CloutChase" },
       {
         name: "description",
-        content: "The sharpest attention traders on CloutChase, ranked by realised profit on Monad.",
+        content:
+          "The sharpest attention traders on CloutChase, ranked by realised profit on Monad.",
       },
       { property: "og:title", content: "Leaderboard — CloutChase" },
       {
@@ -51,16 +52,11 @@ function LeaderboardPage() {
           return (
             <div
               key={entry.address}
-              className={cn(
-                "flex flex-wrap items-center gap-3 p-4",
-                isYou && "bg-primary/5",
-              )}
+              className={cn("flex flex-wrap items-center gap-3 p-4", isYou && "bg-primary/5")}
             >
               <span className="numeric w-8 text-sm text-muted-foreground">#{index + 1}</span>
               {index === 0 && <Crown className="size-4 text-primary" />}
-              <span className="numeric text-sm font-medium">
-                {shortenAddress(entry.address)}
-              </span>
+              <span className="numeric text-sm font-medium">{shortenAddress(entry.address)}</span>
               {isYou && <Badge variant="outline">You</Badge>}
               <div className="ml-auto flex items-center gap-6 text-right text-sm">
                 <div>

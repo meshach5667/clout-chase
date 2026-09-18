@@ -26,7 +26,7 @@ export const wagmiConfig = createConfig({
   transports: {
     [monadTestnet.id]: http(),
   },
-  ssr: true,
+  ssr: false,
 });
 
 declare module "wagmi" {

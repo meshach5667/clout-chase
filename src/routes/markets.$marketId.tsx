@@ -8,13 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
 import { explorerAddressUrl } from "@/lib/web3/chains";
 import { contracts } from "@/lib/web3/config";
-import {
-  isOnChain,
-  useMarket,
-  useMarketActions,
-  usePosition,
-  useWallet,
-} from "@/lib/web3/hooks";
+import { isOnChain, useMarket, useMarketActions, usePosition, useWallet } from "@/lib/web3/hooks";
 import { countdown, formatCompact, formatToken, shortenAddress } from "@/lib/web3/math";
 import { CATEGORIES, OUTCOME, marketStatus } from "@/lib/web3/types";
 
@@ -108,8 +102,7 @@ function MarketDetail() {
             <p className="mt-3 text-muted-foreground">
               Will this reach{" "}
               <span className="numeric text-foreground">{formatCompact(market.threshold)}</span>{" "}
-              attention points by{" "}
-              {new Date(Number(market.resolvesAt) * 1000).toLocaleString()}?
+              attention points by {new Date(Number(market.resolvesAt) * 1000).toLocaleString()}?
             </p>
           </div>
 
@@ -174,9 +167,9 @@ function MarketDetail() {
               <ShieldCheck className="size-4 text-primary" /> How settlement works
             </h2>
             <p>
-              After the window closes, oracle reporters publish the measured attention score. Once
-              a quorum agrees, anyone can trigger settlement and the contract pays winners
-              pro-rata from the losing pool, minus a 3% fee.
+              After the window closes, oracle reporters publish the measured attention score. Once a
+              quorum agrees, anyone can trigger settlement and the contract pays winners pro-rata
+              from the losing pool, minus a 3% fee.
             </p>
             {contracts.market && (
               <a

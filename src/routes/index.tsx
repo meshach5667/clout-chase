@@ -96,7 +96,6 @@ function MarketsPage() {
         </div>
       </section>
 
-
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="flex flex-wrap gap-1.5">
@@ -150,9 +149,7 @@ function MarketsPage() {
 
         {!isLoading && filtered.length === 0 && (
           <div className="panel mt-6 p-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              No markets match this filter yet.
-            </p>
+            <p className="text-sm text-muted-foreground">No markets match this filter yet.</p>
             <Button asChild className="mt-4">
               <Link to="/create">Create the first one</Link>
             </Button>

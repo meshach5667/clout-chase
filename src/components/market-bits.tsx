@@ -3,12 +3,7 @@ import { Flame, TrendingUp, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  countdown,
-  formatCompact,
-  formatToken,
-  impliedYesProbability,
-} from "@/lib/web3/math";
+import { countdown, formatCompact, formatToken, impliedYesProbability } from "@/lib/web3/math";
 import { CATEGORIES, OUTCOME, marketStatus, type Market } from "@/lib/web3/types";
 
 export function OddsRail({ yesPool, noPool }: { yesPool: bigint; noPool: bigint }) {
@@ -82,9 +77,8 @@ export function MarketCard({ market, now }: { market: Market; now: number }) {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Reaches{" "}
-        <span className="numeric text-foreground">{formatCompact(market.threshold)}</span> attention
-        points before{" "}
+        Reaches <span className="numeric text-foreground">{formatCompact(market.threshold)}</span>{" "}
+        attention points before{" "}
         {new Date(Number(market.resolvesAt) * 1000).toLocaleString(undefined, {
           month: "short",
           day: "numeric",

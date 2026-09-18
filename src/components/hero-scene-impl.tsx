@@ -38,8 +38,6 @@ function useTokenColors() {
     setColors(next);
   }, []);
 
-
-
   return colors;
 }
 
@@ -93,12 +91,7 @@ function Core({ color, accent }: { color: string; accent: string }) {
     <group>
       <mesh ref={mesh} castShadow>
         <icosahedronGeometry args={[1.05, 1]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.22}
-          metalness={0.65}
-          flatShading
-        />
+        <meshStandardMaterial color={color} roughness={0.22} metalness={0.65} flatShading />
       </mesh>
       <mesh scale={1.06}>
         <icosahedronGeometry args={[1.05, 1]} />

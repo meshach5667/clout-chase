@@ -4,11 +4,11 @@ Solidity 0.8.24, built and tested with [Foundry](https://book.getfoundry.sh).
 
 ## Contracts
 
-| Contract            | Purpose                                                                       |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `CloutToken`        | ERC20 `CLOUT` staking token with a 1,000/day testnet faucet.                    |
-| `AttentionOracle`   | Multi-reporter oracle publishing the measured attention score per market.       |
-| `CloutChaseMarket`  | Parimutuel YES/NO markets, staking, permissionless settlement, pull payouts.    |
+| Contract           | Purpose                                                                      |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `CloutToken`       | ERC20 `CLOUT` staking token with a 1,000/day testnet faucet.                 |
+| `AttentionOracle`  | Multi-reporter oracle publishing the measured attention score per market.    |
+| `CloutChaseMarket` | Parimutuel YES/NO markets, staking, permissionless settlement, pull payouts. |
 
 ## Market lifecycle
 
@@ -49,6 +49,12 @@ forge script script/Deploy.s.sol --rpc-url $MONAD_RPC_URL --broadcast
 ```
 
 The deploy script prints the three `VITE_*` addresses — paste them into the app's `.env`.
+
+## Deployed testnet addresses
+
+- `VITE_CLOUT_TOKEN_ADDRESS`: [`0x5C87183B6Afdfd7eb544d9E8031C1FB46CD03dB1`](https://testnet.monadexplorer.com/address/0x5C87183B6Afdfd7eb544d9E8031C1FB46CD03dB1)
+- `VITE_ORACLE_ADDRESS`: [`0x38A75f211eb053fB079BF281F3c27BbB2fBe4608`](https://testnet.monadexplorer.com/address/0x38A75f211eb053fB079BF281F3c27BbB2fBe4608)
+- `VITE_MARKET_ADDRESS`: [`0xeBc8b608E68ce6Ef26E203385147f33b12D5dcA4`](https://testnet.monadexplorer.com/address/0xeBc8b608E68ce6Ef26E203385147f33b12D5dcA4)
 
 ## Monad testnet
 

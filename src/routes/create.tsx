@@ -77,8 +77,8 @@ function CreatePage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-3xl font-bold">Create a market</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Markets run for 24–48 hours. Staking closes at 80% of the window, then the attention
-        oracle publishes the score and payouts settle automatically. You earn 1% of the losing pool.
+        Markets run for 24–48 hours. Staking closes at 80% of the window, then the attention oracle
+        publishes the score and payouts settle automatically. You earn 1% of the losing pool.
       </p>
 
       <div className="panel mt-6 space-y-5 p-5">

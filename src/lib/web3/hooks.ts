@@ -60,8 +60,11 @@ export function useWallet() {
       setDemoConnected(true);
       return;
     }
-    const connector = connectors[0];
-    if (!connector) throw new Error("No wallet detected. Install MetaMask or a Monad-ready wallet.");
+    const connector =
+      connectors.find((c) => c.type === "injected" || c.id === "injected" || c.id === "metaMask") ??
+      connectors[0];
+    if (!connector)
+      throw new Error("No wallet detected. Install MetaMask or a Monad-ready wallet.");
     await connectAsync({ connector, chainId: monadTestnet.id });
   }, [connectAsync, connectors]);
 
@@ -76,7 +79,32 @@ export function useWallet() {
 
   const switchToMonad = useCallback(async () => {
     if (!isOnChain) return;
-    await switchChainAsync({ chainId: monadTestnet.id });
+    try {
+      await switchChainAsync({ chainId: monadTestnet.id });
+    } catch (err: unknown) {
+      if (typeof window !== "undefined" && "ethereum" in window) {
+        try {
+          await (
+            window as unknown as { ethereum: { request: (args: unknown) => Promise<unknown> } }
+          ).ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: `0x${monadTestnet.id.toString(16)}`,
+                chainName: monadTestnet.name,
+                nativeCurrency: monadTestnet.nativeCurrency,
+                rpcUrls: monadTestnet.rpcUrls.default.http,
+                blockExplorerUrls: [monadTestnet.blockExplorers.default.url],
+              },
+            ],
+          });
+          return;
+        } catch {
+          // keep original error
+        }
+      }
+      throw err;
+    }
   }, [switchChainAsync]);
 
   if (!isOnChain) {
@@ -441,19 +469,30 @@ export function useMarketActions() {
     [address, run, writeContractAsync],
   );
 
-  return { status, hash, stake, createMarket, claim, settle, faucet, reset: () => setStatus("idle") };
+  return {
+    status,
+    hash,
+    stake,
+    createMarket,
+    claim,
+    settle,
+    faucet,
+    reset: () => setStatus("idle"),
+  };
 }
 
 /** Turns viem/wallet errors into something a human can act on. */
 export function normalizeError(error: unknown, label: string): Error {
   const message = error instanceof Error ? error.message : String(error);
-  if (/User rejected|denied transaction/i.test(message)) return new Error("Transaction rejected in your wallet.");
+  if (/User rejected|denied transaction/i.test(message))
+    return new Error("Transaction rejected in your wallet.");
   if (/insufficient funds/i.test(message)) return new Error("Not enough MON to cover gas.");
   if (/StakeTooSmall/.test(message)) return new Error("Minimum stake is 1 CLOUT.");
   if (/MarketClosed/.test(message)) return new Error("This market has already closed for staking.");
   if (/OracleNotReady/.test(message)) return new Error("The oracle has not published a score yet.");
   if (/AlreadyClaimed/.test(message)) return new Error("You have already claimed this market.");
-  if (/InvalidDuration/.test(message)) return new Error("Duration must be between 24 and 48 hours.");
+  if (/InvalidDuration/.test(message))
+    return new Error("Duration must be between 24 and 48 hours.");
   const short = message.split("\n")[0] ?? message;
   return new Error(`${label} failed: ${short.slice(0, 160)}`);
 }

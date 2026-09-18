@@ -5,12 +5,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/market-bits";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
-import {
-  useMarketActions,
-  usePortfolio,
-  useTokenBalance,
-  useWallet,
-} from "@/lib/web3/hooks";
+import { useMarketActions, usePortfolio, useTokenBalance, useWallet } from "@/lib/web3/hooks";
 import { formatToken } from "@/lib/web3/math";
 import { OUTCOME, marketStatus } from "@/lib/web3/types";
 
