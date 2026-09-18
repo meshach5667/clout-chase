@@ -14,12 +14,16 @@ export function isMobileDevice(): boolean {
 
 /**
  * Checks if the user is currently inside an in-app Web3 wallet browser
- * (e.g. MetaMask Mobile browser, Rabby, Coinbase Wallet browser).
+ * (e.g. MetaMask Mobile browser, Rabby, Coinbase Wallet browser, Phantom browser).
  */
 export function isInAppWallet(): boolean {
   if (typeof window === "undefined") return false;
-  const anyWin = window as unknown as { ethereum?: unknown };
-  return Boolean(anyWin.ethereum);
+  const anyWin = window as unknown as {
+    ethereum?: unknown;
+    phantom?: { ethereum?: unknown };
+    coinbaseWalletExtension?: unknown;
+  };
+  return Boolean(anyWin.ethereum || anyWin.phantom?.ethereum || anyWin.coinbaseWalletExtension);
 }
 
 /**
@@ -74,6 +78,11 @@ export function getDownloadUrls() {
       : android
         ? "https://play.google.com/store/apps/details?id=io.metamask"
         : "https://metamask.io/download/",
+    coinbase: ios
+      ? "https://apps.apple.com/app/coinbase-wallet-nfts-crypto/id1278383455"
+      : android
+        ? "https://play.google.com/store/apps/details?id=org.toshi"
+        : "https://www.coinbase.com/wallet",
     rainbow: ios
       ? "https://apps.apple.com/app/rainbow-ethereum-wallet/id1457119021"
       : android

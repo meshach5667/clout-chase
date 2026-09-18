@@ -1,5 +1,5 @@
 import { createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { injected, metaMask, coinbaseWallet, walletConnect } from "wagmi/connectors";
 import type { Address } from "viem";
 
 import { monadTestnet } from "./chains";
@@ -20,9 +20,27 @@ export const contracts = {
 /** True once the deployed Monad addresses are present in the environment. */
 export const contractsConfigured = Boolean(contracts.market && contracts.token);
 
+const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+
 export const wagmiConfig = createConfig({
   chains: [monadTestnet],
-  connectors: [injected()],
+  connectors: [
+    injected(),
+    metaMask({
+      dapp: {
+        name: "CloutChase",
+        url: typeof window !== "undefined" ? window.location.origin : "https://cloutchase.xyz",
+        iconUrl:
+          typeof window !== "undefined" ? `${window.location.origin}/favicon.ico` : undefined,
+      },
+    }),
+    coinbaseWallet({
+      appName: "CloutChase",
+      appLogoUrl:
+        typeof window !== "undefined" ? `${window.location.origin}/favicon.ico` : undefined,
+    }),
+    ...(wcProjectId ? [walletConnect({ projectId: wcProjectId, showQrModal: true })] : []),
+  ],
   transports: {
     [monadTestnet.id]: http(),
   },

@@ -62,19 +62,29 @@ export function useWallet() {
         setDemoConnected(true);
         return;
       }
-      if (isMobileWithoutWallet() && connectors.length === 0) {
+
+      if (isMobileWithoutWallet() && !connectorOverride) {
         openMobileWalletModal();
         return;
       }
 
       const targetConnector =
         typeof connectorOverride === "string"
-          ? connectors.find((c) => c.id === connectorOverride || c.uid === connectorOverride)
+          ? connectors.find(
+              (c) =>
+                c.id.toLowerCase() === connectorOverride.toLowerCase() ||
+                c.uid?.toLowerCase() === connectorOverride.toLowerCase() ||
+                c.type.toLowerCase() === connectorOverride.toLowerCase() ||
+                c.name.toLowerCase().includes(connectorOverride.toLowerCase()),
+            )
           : (connectorOverride ??
-            connectors.find(
-              (c) => c.type === "injected" || c.id === "injected" || c.id === "metaMask",
-            ) ??
-            connectors[0]);
+            (isMobileWithoutWallet()
+              ? (connectors.find((c) => c.type === "metaMask" || c.id === "metaMaskSDK") ??
+                connectors.find((c) => c.type === "coinbaseWallet") ??
+                connectors[0])
+              : (connectors.find(
+                  (c) => c.type === "injected" || c.id === "injected" || c.id === "metaMask",
+                ) ?? connectors[0])));
 
       if (!targetConnector) {
         if (isMobileDevice()) {

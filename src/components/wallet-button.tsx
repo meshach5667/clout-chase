@@ -19,7 +19,7 @@ export function WalletButton() {
   const [busy, setBusy] = useState(false);
 
   const handleConnect = async (connectorId?: string) => {
-    if (wallet.isMobileWithoutWallet && (!wallet.connectors || wallet.connectors.length === 0)) {
+    if (wallet.isMobileWithoutWallet && !connectorId) {
       wallet.openMobileWalletModal();
       return;
     }
@@ -34,6 +34,23 @@ export function WalletButton() {
   };
 
   if (!wallet.isConnected) {
+    if (wallet.isMobile) {
+      return (
+        <Button
+          onClick={() => void handleConnect()}
+          disabled={busy || wallet.isConnecting}
+          className="gap-2 font-semibold"
+        >
+          {busy || wallet.isConnecting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Wallet className="size-4" />
+          )}
+          Connect wallet
+        </Button>
+      );
+    }
+
     const validConnectors = wallet.connectors?.filter(
       (c, idx, arr) => arr.findIndex((x) => x.name === c.name) === idx,
     );

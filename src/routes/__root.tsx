@@ -6,7 +6,6 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Web3Provider } from "@/components/providers";
 import { SiteHeader } from "@/components/site-header";
 import { MobileWalletModal } from "@/components/mobile-wallet-modal";
-import { MobileWalletBanner } from "@/components/mobile-wallet-banner";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -82,7 +81,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Web3Provider>
         <div className="flex min-h-screen flex-col">
-          <MobileWalletBanner />
           <SiteHeader />
           <main className="flex-1">
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
