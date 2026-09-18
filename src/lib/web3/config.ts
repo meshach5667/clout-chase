@@ -22,7 +22,7 @@ export const contractsConfigured = Boolean(contracts.market && contracts.token);
 
 export const wagmiConfig = createConfig({
   chains: [monadTestnet],
-  connectors: [injected({ shimDisconnect: true })],
+  connectors: [injected()],
   transports: {
     [monadTestnet.id]: http(),
   },

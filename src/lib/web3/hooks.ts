@@ -54,19 +54,39 @@ export function useWallet() {
     setDemoConnected(window.localStorage.getItem(DEMO_CONNECT_KEY) === "1");
   }, []);
 
-  const connect = useCallback(async () => {
-    if (!isOnChain) {
-      window.localStorage.setItem(DEMO_CONNECT_KEY, "1");
-      setDemoConnected(true);
-      return;
-    }
-    const connector =
-      connectors.find((c) => c.type === "injected" || c.id === "injected" || c.id === "metaMask") ??
-      connectors[0];
-    if (!connector)
-      throw new Error("No wallet detected. Install MetaMask or a Monad-ready wallet.");
-    await connectAsync({ connector, chainId: monadTestnet.id });
-  }, [connectAsync, connectors]);
+  const connect = useCallback(
+    async (connectorOverride?: (typeof connectors)[number] | string) => {
+      if (!isOnChain) {
+        window.localStorage.setItem(DEMO_CONNECT_KEY, "1");
+        setDemoConnected(true);
+        return;
+      }
+      const targetConnector =
+        typeof connectorOverride === "string"
+          ? connectors.find((c) => c.id === connectorOverride || c.uid === connectorOverride)
+          : (connectorOverride ??
+            connectors.find(
+              (c) => c.type === "injected" || c.id === "injected" || c.id === "metaMask",
+            ) ??
+            connectors[0]);
+
+      if (!targetConnector)
+        throw new Error("No wallet detected. Install MetaMask or a Monad-ready wallet.");
+
+      try {
+        await connectAsync({ connector: targetConnector });
+      } catch (err) {
+        throw normalizeError(err, "Connect wallet");
+      }
+
+      try {
+        await switchChainAsync({ chainId: monadTestnet.id });
+      } catch {
+        // User can manually click switch to Monad in the UI
+      }
+    },
+    [connectAsync, connectors, switchChainAsync],
+  );
 
   const disconnectWallet = useCallback(() => {
     if (!isOnChain) {
@@ -117,6 +137,7 @@ export function useWallet() {
       disconnect: disconnectWallet,
       switchToMonad,
       hasInjectedWallet: true,
+      connectors: [] as typeof connectors,
     };
   }
 
@@ -129,6 +150,7 @@ export function useWallet() {
     disconnect: disconnectWallet,
     switchToMonad,
     hasInjectedWallet: connectors.length > 0,
+    connectors,
   };
 }
 
@@ -484,8 +506,12 @@ export function useMarketActions() {
 /** Turns viem/wallet errors into something a human can act on. */
 export function normalizeError(error: unknown, label: string): Error {
   const message = error instanceof Error ? error.message : String(error);
-  if (/User rejected|denied transaction/i.test(message))
-    return new Error("Transaction rejected in your wallet.");
+  if (/wallet must has? at least one account/i.test(message))
+    return new Error(
+      "Your wallet is locked or has no active account. Please unlock your wallet extension and ensure an account is created/selected.",
+    );
+  if (/User rejected|denied transaction|user rejected the request/i.test(message))
+    return new Error("Request was rejected or cancelled in your wallet.");
   if (/insufficient funds/i.test(message)) return new Error("Not enough MON to cover gas.");
   if (/StakeTooSmall/.test(message)) return new Error("Minimum stake is 1 CLOUT.");
   if (/MarketClosed/.test(message)) return new Error("This market has already closed for staking.");

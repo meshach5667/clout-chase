@@ -18,19 +18,53 @@ export function WalletButton() {
   const { faucet } = useMarketActions();
   const [busy, setBusy] = useState(false);
 
+  const handleConnect = async (connectorId?: string) => {
+    setBusy(true);
+    try {
+      await wallet.connect(connectorId);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not connect wallet");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (!wallet.isConnected) {
+    const validConnectors = wallet.connectors?.filter(
+      (c, idx, arr) => arr.findIndex((x) => x.name === c.name) === idx,
+    );
+
+    if (validConnectors && validConnectors.length > 1) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button disabled={busy || wallet.isConnecting} className="gap-2 font-semibold">
+              {busy || wallet.isConnecting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Wallet className="size-4" />
+              )}
+              Connect wallet
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {validConnectors.map((connector) => (
+              <DropdownMenuItem
+                key={connector.uid ?? connector.id}
+                onClick={() => void handleConnect(connector.id)}
+                className="cursor-pointer"
+              >
+                {connector.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
     return (
       <Button
-        onClick={async () => {
-          setBusy(true);
-          try {
-            await wallet.connect();
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Could not connect wallet");
-          } finally {
-            setBusy(false);
-          }
-        }}
+        onClick={() => void handleConnect()}
         disabled={busy || wallet.isConnecting}
         className="gap-2 font-semibold"
       >
