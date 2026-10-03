@@ -38,7 +38,7 @@ export function reportLovableError(error: unknown, context: Record<string, unkno
       severity: "error",
     },
   );
- 
+
   const message =
     error instanceof Response
       ? `Response ${error.status}${error.url ? ` at ${error.url}` : ""}`

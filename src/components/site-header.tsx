@@ -35,7 +35,14 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <div className="hidden items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] sm:flex">
+            <span className="font-semibold text-primary">2,000 CLOUT</span>
+            <span className="text-muted-foreground">=</span>
+            <span className="font-semibold text-foreground">1 MON</span>
+            <span className="text-muted-foreground">=</span>
+            <span className="font-semibold text-yes">$3.00 USD</span>
+          </div>
           <WalletButton />
         </div>
       </div>

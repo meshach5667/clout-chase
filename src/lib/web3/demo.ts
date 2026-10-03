@@ -331,6 +331,16 @@ export function demoFaucet(address: string) {
   });
 }
 
+export function demoCashout(amount: bigint, address: string) {
+  const balanceKey = address.toLowerCase();
+  const current = demoBalance(address);
+  if (current < amount) throw new Error("Insufficient CLOUT balance to cash out");
+  commit({
+    ...state,
+    balances: { ...state.balances, [balanceKey]: current - amount },
+  });
+}
+
 export function resetDemoState() {
   hydrated = true;
   commit(seed());

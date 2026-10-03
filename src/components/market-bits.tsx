@@ -3,7 +3,13 @@ import { Flame, TrendingUp, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { countdown, formatCompact, formatToken, impliedYesProbability } from "@/lib/web3/math";
+import {
+  countdown,
+  formatCompact,
+  formatToken,
+  formatCloutUsd,
+  impliedYesProbability,
+} from "@/lib/web3/math";
 import { CATEGORIES, OUTCOME, marketStatus, type Market } from "@/lib/web3/types";
 
 export function OddsRail({ yesPool, noPool }: { yesPool: bigint; noPool: bigint }) {
@@ -21,8 +27,14 @@ export function OddsRail({ yesPool, noPool }: { yesPool: bigint; noPool: bigint 
         />
       </div>
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span className="numeric">{formatToken(yesPool)} CLOUT</span>
-        <span className="numeric">{formatToken(noPool)} CLOUT</span>
+        <span className="numeric">
+          {formatToken(yesPool)} CLOUT{" "}
+          <span className="text-[10px] font-semibold text-yes">(${formatCloutUsd(yesPool)})</span>
+        </span>
+        <span className="numeric">
+          {formatToken(noPool)} CLOUT{" "}
+          <span className="text-[10px] font-semibold text-no">(${formatCloutUsd(noPool)})</span>
+        </span>
       </div>
     </div>
   );
@@ -92,7 +104,8 @@ export function MarketCard({ market, now }: { market: Market; now: number }) {
       <div className="flex items-center gap-4 border-t border-border/70 pt-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <TrendingUp className="size-3.5" />
-          <span className="numeric">{formatToken(total)}</span> pool
+          <span className="numeric font-medium">{formatToken(total)} CLOUT</span>
+          <span className="text-[11px] font-semibold text-yes">(${formatCloutUsd(total)})</span>
         </span>
         <span className="flex items-center gap-1.5">
           <Users className="size-3.5" /> {CATEGORIES[market.category]}

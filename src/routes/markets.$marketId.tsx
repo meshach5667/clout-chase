@@ -9,7 +9,14 @@ import { useNow } from "@/hooks/use-now";
 import { explorerAddressUrl } from "@/lib/web3/chains";
 import { contracts } from "@/lib/web3/config";
 import { isOnChain, useMarket, useMarketActions, usePosition, useWallet } from "@/lib/web3/hooks";
-import { countdown, formatCompact, formatToken, shortenAddress } from "@/lib/web3/math";
+import {
+  countdown,
+  formatCloutMon,
+  formatCloutUsd,
+  formatCompact,
+  formatToken,
+  shortenAddress,
+} from "@/lib/web3/math";
 import { CATEGORIES, OUTCOME, marketStatus } from "@/lib/web3/types";
 
 export const Route = createFileRoute("/markets/$marketId")({
@@ -47,8 +54,8 @@ function MarketDetail() {
   const { data: market, isLoading, error } = useMarket(id);
   const wallet = useWallet();
   const position = usePosition(id, wallet.address);
-  const { claim, settle, status } = useMarketActions();
-  const busy = status === "pending" || status === "confirming";
+  const { claim, claimAndCashout, settle, status } = useMarketActions();
+  const busy = status === "pending" || status === "confirming" || status === "approving";
 
   if (isLoading) {
     return (
@@ -80,6 +87,17 @@ function MarketDetail() {
       (market.outcome === OUTCOME.No && position.no > 0n) ||
       market.outcome === OUTCOME.Canceled);
 
+  const winningStake = market.outcome === OUTCOME.Yes ? position.yes : position.no;
+  const winPool = market.outcome === OUTCOME.Yes ? market.yesPool : market.noPool;
+  const losePool = market.outcome === OUTCOME.Yes ? market.noPool : market.yesPool;
+  const distributable = losePool - (losePool * 300n) / 10_000n;
+  const estPayout =
+    market.outcome === OUTCOME.Canceled
+      ? size
+      : winningStake > 0n && winPool > 0n
+        ? winningStake + (distributable * winningStake) / winPool
+        : 0n;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <Link
@@ -109,7 +127,11 @@ function MarketDetail() {
           <div className="panel p-5">
             <OddsRail yesPool={market.yesPool} noPool={market.noPool} />
             <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <Fact label="Total pool" value={`${formatToken(market.yesPool + market.noPool)}`} />
+              <Fact
+                label="Total pool"
+                value={`${formatToken(market.yesPool + market.noPool)}`}
+                subValue={`$${formatCloutUsd(market.yesPool + market.noPool)}`}
+              />
               <Fact
                 label={state === "live" ? "Staking closes" : "Resolves"}
                 value={
@@ -131,32 +153,62 @@ function MarketDetail() {
               <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
                 Your position
               </h2>
-              <div className="mt-3 flex flex-wrap items-center gap-4">
-                <p className="numeric text-2xl font-bold">
-                  {formatToken(size)}{" "}
-                  <span className={position.yes > 0n ? "text-yes" : "text-no"}>
-                    {position.yes > 0n ? "YES" : "NO"}
-                  </span>
-                </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="numeric text-2xl font-bold">
+                    {formatToken(size)}{" "}
+                    <span className={position.yes > 0n ? "text-yes" : "text-no"}>
+                      {position.yes > 0n ? "YES" : "NO"}
+                    </span>
+                  </p>
+                  <p className="numeric text-xs font-semibold text-yes mt-0.5">
+                    ≈ {formatCloutMon(size)} MON (${formatCloutUsd(size)} USD)
+                  </p>
+                </div>
+
                 {market.settled && won && !position.claimed && (
-                  <Button
-                    disabled={busy}
-                    onClick={async () => {
-                      try {
-                        await claim(market.id);
-                        toast.success("Payout sent to your wallet");
-                      } catch (e) {
-                        toast.error(e instanceof Error ? e.message : "Claim failed");
-                      }
-                    }}
-                  >
-                    {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Claim payout
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      disabled={busy}
+                      className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+                      onClick={async () => {
+                        try {
+                          await claimAndCashout(market.id);
+                          toast.success(
+                            `Payout of ${formatCloutMon(estPayout)} MON ($${formatCloutUsd(estPayout)}) sent to your connected wallet!`,
+                          );
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Claim as MON failed");
+                        }
+                      }}
+                    >
+                      {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
+                      Claim as MON ({formatCloutMon(estPayout)} MON · ${formatCloutUsd(estPayout)})
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={busy}
+                      onClick={async () => {
+                        try {
+                          await claim(market.id);
+                          toast.success("CLOUT payout claimed to your wallet");
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Claim failed");
+                        }
+                      }}
+                    >
+                      Claim as CLOUT
+                    </Button>
+                  </div>
                 )}
                 {market.settled && !won && (
                   <span className="text-sm text-muted-foreground">
                     This market settled against your side.
                   </span>
+                )}
+                {position.claimed && (
+                  <span className="text-sm font-semibold text-yes">Payout claimed</span>
                 )}
               </div>
             </div>
@@ -167,9 +219,9 @@ function MarketDetail() {
               <ShieldCheck className="size-4 text-primary" /> How settlement works
             </h2>
             <p>
-              After the window closes, oracle reporters publish the measured attention score. Once a
-              quorum agrees, anyone can trigger settlement and the contract pays winners pro-rata
-              from the losing pool, minus a 3% fee.
+              After the window closes, the measured attention score is verified and finalized.
+              Anyone can trigger settlement and the contract pays winners pro-rata from the losing
+              pool, minus a 3% fee.
             </p>
             {contracts.market && (
               <a
@@ -190,23 +242,24 @@ function MarketDetail() {
           {state === "closed" && (
             <div className="panel space-y-3 p-5">
               <p className="text-sm text-muted-foreground">
-                Window closed. Settlement runs as soon as the oracle score is final.
+                Window closed. Settle this market now to finalize the oracle score and distribute
+                payouts.
               </p>
               <Button
                 variant="secondary"
-                className="w-full"
+                className="w-full font-semibold"
                 disabled={busy}
                 onClick={async () => {
                   try {
                     await settle(market.id, market.threshold + 1n);
-                    toast.success("Market settled");
+                    toast.success("Market settled successfully!");
                   } catch (e) {
-                    toast.error(e instanceof Error ? e.message : "Settlement not ready");
+                    toast.error(e instanceof Error ? e.message : "Settlement failed");
                   }
                 }}
               >
                 {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
-                {isOnChain ? "Trigger settlement" : "Simulate oracle settlement"}
+                Settle market (Finalize on Monad)
               </Button>
             </div>
           )}
@@ -216,11 +269,12 @@ function MarketDetail() {
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
+function Fact({ label, value, subValue }: { label: string; value: string; subValue?: string }) {
   return (
     <div>
       <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</dt>
       <dd className="numeric mt-1 font-semibold">{value}</dd>
+      {subValue && <span className="numeric text-[11px] font-semibold text-yes">{subValue}</span>}
     </div>
   );
 }

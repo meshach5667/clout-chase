@@ -8,7 +8,13 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { explorerTxUrl } from "@/lib/web3/chains";
 import { useMarketActions, useTokenBalance, useWallet } from "@/lib/web3/hooks";
-import { formatToken, parseToken, previewPayout } from "@/lib/web3/math";
+import {
+  formatCloutMon,
+  formatCloutUsd,
+  formatToken,
+  parseToken,
+  previewPayout,
+} from "@/lib/web3/math";
 import { marketStatus, type Market } from "@/lib/web3/types";
 
 const QUICK = ["10", "50", "100", "500"];
@@ -67,7 +73,12 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
               : "border-border text-muted-foreground hover:border-yes/50",
           )}
         >
-          <span className="block text-xs uppercase tracking-widest">Yes</span>
+          <div className="flex items-center justify-between">
+            <span className="block text-xs uppercase tracking-widest">Yes</span>
+            <span className="text-[10px] font-semibold text-yes">
+              (${formatCloutUsd(market.yesPool)})
+            </span>
+          </div>
           <span className="numeric text-lg font-bold">{formatToken(market.yesPool)}</span>
         </button>
         <button
@@ -80,7 +91,12 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
               : "border-border text-muted-foreground hover:border-no/50",
           )}
         >
-          <span className="block text-xs uppercase tracking-widest">No</span>
+          <div className="flex items-center justify-between">
+            <span className="block text-xs uppercase tracking-widest">No</span>
+            <span className="text-[10px] font-semibold text-no">
+              (${formatCloutUsd(market.noPool)})
+            </span>
+          </div>
           <span className="numeric text-lg font-bold">{formatToken(market.noPool)}</span>
         </button>
       </div>
@@ -88,9 +104,16 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="stake-amount">Stake</Label>
-          <span className="numeric text-xs text-muted-foreground">
-            Balance {formatToken(balance)} CLOUT
-          </span>
+          <div className="flex items-center gap-2">
+            {parsed > 0n && (
+              <span className="numeric text-xs font-semibold text-yes">
+                ≈ {formatCloutMon(parsed)} MON (${formatCloutUsd(parsed)})
+              </span>
+            )}
+            <span className="numeric text-xs text-muted-foreground">
+              Bal: {formatToken(balance)}
+            </span>
+          </div>
         </div>
         <Input
           id="stake-amount"
@@ -123,9 +146,14 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
       </div>
 
       <dl className="space-y-1.5 rounded-lg bg-surface-2 p-3 text-sm">
-        <div className="flex justify-between">
+        <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
           <dt className="text-muted-foreground">Payout if correct</dt>
-          <dd className="numeric font-semibold text-primary">{formatToken(payout)} CLOUT</dd>
+          <dd className="numeric text-right font-semibold text-primary">
+            {formatToken(payout)} CLOUT{" "}
+            <span className="text-xs font-bold text-yes">
+              (≈ {formatCloutMon(payout)} MON · ${formatCloutUsd(payout)})
+            </span>
+          </dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-muted-foreground">Fee (from losing pool)</dt>

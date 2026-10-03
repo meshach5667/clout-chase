@@ -1,12 +1,20 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { ArrowDownToLine, Loader2, Sparkles, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
+import { CashoutModal } from "@/components/cashout-modal";
 import { StatusBadge } from "@/components/market-bits";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
-import { useMarketActions, usePortfolio, useTokenBalance, useWallet } from "@/lib/web3/hooks";
-import { formatToken } from "@/lib/web3/math";
+import {
+  useMarketActions,
+  useMonBalance,
+  usePortfolio,
+  useTokenBalance,
+  useWallet,
+} from "@/lib/web3/hooks";
+import { formatCloutMon, formatCloutUsd, formatToken } from "@/lib/web3/math";
 import { OUTCOME, marketStatus } from "@/lib/web3/types";
 
 export const Route = createFileRoute("/portfolio")({
@@ -34,9 +42,11 @@ function PortfolioPage() {
   const now = useNow();
   const wallet = useWallet();
   const balance = useTokenBalance(wallet.address);
+  const monBalance = useMonBalance(wallet.address);
   const { entries, isLoading } = usePortfolio(wallet.address);
-  const { claim, status } = useMarketActions();
-  const busy = status === "pending" || status === "confirming";
+  const { claim, claimAndCashout, status } = useMarketActions();
+  const [cashoutOpen, setCashoutOpen] = useState(false);
+  const busy = status === "pending" || status === "confirming" || status === "approving";
 
   if (!wallet.isConnected) {
     return (
@@ -57,12 +67,58 @@ function PortfolioPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-3xl font-bold">Your portfolio</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Your portfolio</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Track your open positions, settled payouts, and cash out rewards to native MON.
+          </p>
+        </div>
+        <Button
+          onClick={() => setCashoutOpen(true)}
+          className="gap-2 font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+        >
+          <ArrowDownToLine className="size-4" /> Cash out CLOUT to MON
+        </Button>
+      </div>
 
-      <dl className="mt-6 grid grid-cols-3 gap-3">
-        <Metric label="Wallet" value={`${formatToken(balance, 0)} CLOUT`} />
-        <Metric label="At stake" value={`${formatToken(staked, 0)} CLOUT`} />
-        <Metric label="Open positions" value={String(open)} />
+      {/* Conversion Banner */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">
+            Rate: 2,000 CLOUT = 1 MON = $3.00 USD
+          </span>
+          <span className="text-xs text-muted-foreground">
+            (Rewards convert directly to native MON in your wallet)
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCashoutOpen(true)}
+          className="text-xs font-semibold"
+        >
+          Open Cashout Calculator
+        </Button>
+      </div>
+
+      <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Metric
+          label="CLOUT Balance"
+          value={`${formatToken(balance, 0)} CLOUT`}
+          subtext={`≈ ${formatCloutMon(balance)} MON ($${formatCloutUsd(balance)} USD)`}
+        />
+        <Metric
+          label="At stake"
+          value={`${formatToken(staked, 0)} CLOUT`}
+          subtext={`≈ ${formatCloutMon(staked)} MON ($${formatCloutUsd(staked)} USD)`}
+        />
+        <Metric
+          label="Wallet MON Balance"
+          value={`${formatToken(monBalance, 4)} MON`}
+          subtext={`≈ $${(Number(formatToken(monBalance, 4)) * 3).toFixed(2)} USD`}
+        />
       </dl>
 
       {isLoading && (
@@ -91,6 +147,17 @@ function PortfolioPage() {
               market.outcome === OUTCOME.Canceled);
           const claimable = market.settled && won && !position.claimed;
 
+          const winningStake = market.outcome === OUTCOME.Yes ? position.yes : position.no;
+          const winPool = market.outcome === OUTCOME.Yes ? market.yesPool : market.noPool;
+          const losePool = market.outcome === OUTCOME.Yes ? market.noPool : market.yesPool;
+          const distributable = losePool - (losePool * 300n) / 10_000n;
+          const estPayout =
+            market.outcome === OUTCOME.Canceled
+              ? size
+              : winningStake > 0n && winPool > 0n
+                ? winningStake + (distributable * winningStake) / winPool
+                : 0n;
+
           return (
             <div key={market.id.toString()} className="panel flex flex-wrap items-center gap-4 p-4">
               <div className="min-w-0 flex-1">
@@ -103,28 +170,50 @@ function PortfolioPage() {
                 </Link>
                 <p className="mt-1 text-xs text-muted-foreground">
                   <span className={side === "YES" ? "text-yes" : "text-no"}>{side}</span> ·{" "}
-                  <span className="numeric">{formatToken(size)} CLOUT</span> ·{" "}
-                  {marketStatus(market, now)}
+                  <span className="numeric font-medium">{formatToken(size)} CLOUT</span>{" "}
+                  <span className="numeric text-yes font-semibold">(${formatCloutUsd(size)})</span>{" "}
+                  · {marketStatus(market, now)}
                 </p>
               </div>
               <StatusBadge market={market} now={now} />
               {claimable ? (
-                <Button
-                  size="sm"
-                  disabled={busy}
-                  onClick={async () => {
-                    try {
-                      await claim(market.id);
-                      toast.success("Payout claimed");
-                    } catch (error) {
-                      toast.error(error instanceof Error ? error.message : "Claim failed");
-                    }
-                  }}
-                >
-                  {busy && <Loader2 className="mr-2 size-3.5 animate-spin" />} Claim
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    disabled={busy}
+                    className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+                    onClick={async () => {
+                      try {
+                        await claimAndCashout(market.id);
+                        toast.success(
+                          `Payout of ${formatCloutMon(estPayout)} MON ($${formatCloutUsd(estPayout)}) sent to your wallet!`,
+                        );
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : "Claim as MON failed");
+                      }
+                    }}
+                  >
+                    {busy && <Loader2 className="mr-2 size-3.5 animate-spin" />}
+                    Claim as MON ({formatCloutMon(estPayout)} MON · ${formatCloutUsd(estPayout)})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={async () => {
+                      try {
+                        await claim(market.id);
+                        toast.success("CLOUT payout claimed to wallet");
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : "Claim failed");
+                      }
+                    }}
+                  >
+                    Claim CLOUT
+                  </Button>
+                </div>
               ) : market.settled ? (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground font-medium">
                   {position.claimed ? "Claimed" : "No payout"}
                 </span>
               ) : null}
@@ -132,15 +221,18 @@ function PortfolioPage() {
           );
         })}
       </div>
+
+      <CashoutModal open={cashoutOpen} onOpenChange={setCashoutOpen} />
     </div>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, subtext }: { label: string; value: string; subtext?: string }) {
   return (
     <div className="panel p-4">
       <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</dt>
       <dd className="numeric mt-1 text-lg font-bold">{value}</dd>
+      {subtext && <p className="numeric mt-0.5 text-xs font-semibold text-yes">{subtext}</p>}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Crown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { useLeaderboard, useWallet } from "@/lib/web3/hooks";
-import { formatToken, shortenAddress } from "@/lib/web3/math";
+import { formatCloutUsd, formatToken, shortenAddress } from "@/lib/web3/math";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/leaderboard")({
@@ -35,7 +35,7 @@ function LeaderboardPage() {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-3xl font-bold">Leaderboard</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Ranked by realised profit across every settled market.
+        Ranked by realised profit across every settled market (2,000 CLOUT = 1 MON = $3.00 USD).
       </p>
 
       <div className="panel mt-6 divide-y divide-border/70">
@@ -69,14 +69,20 @@ function LeaderboardPage() {
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
                     Staked
                   </p>
-                  <p className="numeric">{formatToken(entry.totalStaked, 0)}</p>
+                  <p className="numeric">{formatToken(entry.totalStaked, 0)} CLOUT</p>
+                  <p className="numeric text-[11px] text-muted-foreground">
+                    ${formatCloutUsd(entry.totalStaked)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
                     Profit
                   </p>
                   <p className="numeric font-semibold text-primary">
-                    +{formatToken(entry.totalWon, 0)}
+                    +{formatToken(entry.totalWon, 0)} CLOUT
+                  </p>
+                  <p className="numeric text-[11px] font-semibold text-yes">
+                    +${formatCloutUsd(entry.totalWon)} USD
                   </p>
                 </div>
               </div>

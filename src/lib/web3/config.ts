@@ -15,6 +15,7 @@ export const contracts = {
   market: readAddress("VITE_MARKET_ADDRESS"),
   token: readAddress("VITE_CLOUT_TOKEN_ADDRESS"),
   oracle: readAddress("VITE_ORACLE_ADDRESS"),
+  cashout: readAddress("VITE_CASHOUT_ADDRESS"),
 };
 
 /** True once the deployed Monad addresses are present in the environment. */

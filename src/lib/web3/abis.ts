@@ -259,3 +259,30 @@ export const oracleAbi = [
     outputs: [],
   },
 ] as const;
+
+export const cashoutAbi = [
+  {
+    type: "function",
+    name: "cashout",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "cloutAmount", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "cashoutTo",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "recipient", type: "address" },
+      { name: "cloutAmount", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "CLOUT_PER_MON",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+] as const;

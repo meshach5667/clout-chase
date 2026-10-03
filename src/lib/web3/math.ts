@@ -5,6 +5,32 @@ export const PROTOCOL_FEE_BPS = 200n;
 export const CREATOR_FEE_BPS = 100n;
 const BPS = 10_000n;
 
+/** Fixed rate: 2,000 CLOUT = 1 MON = $3.00 USD */
+export const CLOUT_PER_MON = 2000n;
+export const MON_USD_PRICE = 3.0; // 1 MON = $3.00 USD
+
+/** Returns the MON equivalent of a CLOUT amount */
+export function cloutToMon(cloutAmount: bigint): number {
+  return Number(formatUnits(cloutAmount, TOKEN_DECIMALS)) / Number(CLOUT_PER_MON);
+}
+
+/** Returns the USD equivalent of a CLOUT amount (via MON) */
+export function cloutToUsd(cloutAmount: bigint): number {
+  return cloutToMon(cloutAmount) * MON_USD_PRICE;
+}
+
+/** Formats the MON value of a CLOUT amount, e.g. "0.05 MON" */
+export function formatCloutMon(cloutAmount: bigint, maxFractionDigits = 4): string {
+  const mon = cloutToMon(cloutAmount);
+  return mon.toLocaleString("en-US", { maximumFractionDigits });
+}
+
+/** Formats the USD value of a CLOUT amount, e.g. "$1.50" */
+export function formatCloutUsd(cloutAmount: bigint, maxFractionDigits = 2): string {
+  const usd = cloutToUsd(cloutAmount);
+  return usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits });
+}
+
 /** YES probability (0-1) implied by the current parimutuel pools. */
 export function impliedYesProbability(yesPool: bigint, noPool: bigint): number {
   const total = yesPool + noPool;

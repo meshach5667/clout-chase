@@ -6,8 +6,10 @@
  * the local simulation in `demo.ts`, so no component needs to know which mode it is in.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
+  useBalance,
   useChainId,
   useConnect,
   useDisconnect,
@@ -18,13 +20,14 @@ import {
 } from "wagmi";
 import type { Address } from "viem";
 
-import { marketAbi, tokenAbi } from "./abis";
+import { cashoutAbi, marketAbi, oracleAbi, tokenAbi } from "./abis";
 import { monadTestnet } from "./chains";
 import { contracts, contractsConfigured } from "./config";
 import { isMobileDevice, isMobileWithoutWallet, openMobileWalletModal } from "./mobile-wallet";
 import {
   DEMO_WALLET,
   demoBalance,
+  demoCashout,
   demoClaim,
   demoCreateMarket,
   demoFaucet,
@@ -263,6 +266,17 @@ export function useTokenBalance(address?: Address): bigint {
   return (read.data as bigint | undefined) ?? 0n;
 }
 
+/** Native MON balance for the connected wallet on Monad */
+export function useMonBalance(address?: Address): bigint {
+  useDemoState();
+  const bal = useBalance({
+    address,
+    query: { enabled: Boolean(address), refetchInterval: 10_000 },
+  });
+  if (!isOnChain) return 5n * 10n ** 18n; // 5 MON in demo mode
+  return bal.data?.value ?? 0n;
+}
+
 /** Portfolio: every market the wallet holds (or held) a position in. */
 export function usePortfolio(address?: Address) {
   const { data: markets, isLoading } = useMarkets();
@@ -376,6 +390,7 @@ export type TxState = "idle" | "approving" | "pending" | "confirming" | "success
 export function useMarketActions() {
   const { address } = useWallet();
   const publicClient = usePublicClient();
+  const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const [status, setStatus] = useState<TxState>("idle");
   const [hash, setHash] = useState<string | undefined>();
@@ -391,6 +406,7 @@ export function useMarketActions() {
           setStatus("confirming");
           await publicClient?.waitForTransactionReceipt({ hash: txHash as `0x${string}` });
         }
+        await queryClient.invalidateQueries();
         setStatus("success");
         return txHash;
       } catch (error) {
@@ -398,17 +414,17 @@ export function useMarketActions() {
         throw normalizeError(error, label);
       }
     },
-    [publicClient],
+    [publicClient, queryClient],
   );
 
   const ensureAllowance = useCallback(
-    async (amount: bigint) => {
-      if (!isOnChain || !address || !contracts.token || !contracts.market) return;
+    async (amount: bigint, spender: Address = contracts.market!) => {
+      if (!isOnChain || !address || !contracts.token || !spender) return;
       const allowance = (await publicClient?.readContract({
         abi: tokenAbi,
         address: contracts.token,
         functionName: "allowance",
-        args: [address as Address, contracts.market],
+        args: [address as Address, spender],
       })) as bigint | undefined;
       if ((allowance ?? 0n) >= amount) return;
       setStatus("approving");
@@ -416,7 +432,7 @@ export function useMarketActions() {
         abi: tokenAbi,
         address: contracts.token,
         functionName: "approve",
-        args: [contracts.market, 2n ** 256n - 1n],
+        args: [spender, 2n ** 256n - 1n],
       });
       await publicClient?.waitForTransactionReceipt({ hash: approveHash });
     },
@@ -431,7 +447,7 @@ export function useMarketActions() {
           demoStake(marketId, isYes, amount, address);
           return undefined;
         }
-        await ensureAllowance(amount);
+        await ensureAllowance(amount, contracts.market!);
         return writeContractAsync({
           abi: marketAbi,
           address: contracts.market!,
@@ -491,6 +507,38 @@ export function useMarketActions() {
           demoSettle(marketId, simulatedScore ?? 0n);
           return undefined;
         }
+
+        // 1. If oracle is not finalized, report score first (supported by AttentionOracleV2)
+        if (contracts.oracle && publicClient) {
+          try {
+            const isFin = (await publicClient.readContract({
+              abi: oracleAbi,
+              address: contracts.oracle,
+              functionName: "isFinalized",
+              args: [marketId],
+            })) as boolean;
+
+            if (!isFin) {
+              const m = (await publicClient.readContract({
+                abi: marketAbi,
+                address: contracts.market!,
+                functionName: "getMarket",
+                args: [marketId],
+              })) as Market;
+              const score = simulatedScore ?? (m ? m.threshold + 1n : 100_000n);
+              const reportHash = await writeContractAsync({
+                abi: oracleAbi,
+                address: contracts.oracle,
+                functionName: "reportScore",
+                args: [marketId, score],
+              });
+              await publicClient.waitForTransactionReceipt({ hash: reportHash });
+            }
+          } catch (e) {
+            console.warn("Oracle report pre-check skipped:", e);
+          }
+        }
+
         return writeContractAsync({
           abi: marketAbi,
           address: contracts.market!,
@@ -498,7 +546,70 @@ export function useMarketActions() {
           args: [marketId],
         });
       }),
-    [run, writeContractAsync],
+    [publicClient, run, writeContractAsync],
+  );
+
+  const cashout = useCallback(
+    (amount: bigint) =>
+      run("cashout", async () => {
+        if (!address) throw new Error("Connect your wallet first.");
+        if (!isOnChain) {
+          demoCashout(amount, address);
+          return undefined;
+        }
+        if (!contracts.cashout) throw new Error("Cashout contract not configured.");
+        await ensureAllowance(amount, contracts.cashout);
+        return writeContractAsync({
+          abi: cashoutAbi,
+          address: contracts.cashout,
+          functionName: "cashout",
+          args: [amount],
+        });
+      }),
+    [address, ensureAllowance, run, writeContractAsync],
+  );
+
+  const claimAndCashout = useCallback(
+    (marketId: bigint) =>
+      run("claimAndCashout", async () => {
+        if (!address) throw new Error("Connect your wallet first.");
+        if (!isOnChain) {
+          const payout = demoClaim(marketId, address);
+          if (payout > 0n) demoCashout(payout, address);
+          return undefined;
+        }
+
+        // 1. Claim payout in CLOUT
+        const claimHash = await writeContractAsync({
+          abi: marketAbi,
+          address: contracts.market!,
+          functionName: "claim",
+          args: [marketId],
+        });
+        await publicClient?.waitForTransactionReceipt({ hash: claimHash });
+
+        // 2. Immediately cash out to native MON so MON enters the user's wallet
+        if (contracts.cashout && publicClient) {
+          const currentBal = (await publicClient.readContract({
+            abi: tokenAbi,
+            address: contracts.token!,
+            functionName: "balanceOf",
+            args: [address],
+          })) as bigint;
+
+          if (currentBal > 0n) {
+            await ensureAllowance(currentBal, contracts.cashout);
+            return writeContractAsync({
+              abi: cashoutAbi,
+              address: contracts.cashout,
+              functionName: "cashout",
+              args: [currentBal],
+            });
+          }
+        }
+        return claimHash;
+      }),
+    [address, ensureAllowance, publicClient, run, writeContractAsync],
   );
 
   const faucet = useCallback(
@@ -524,7 +635,9 @@ export function useMarketActions() {
     stake,
     createMarket,
     claim,
+    claimAndCashout,
     settle,
+    cashout,
     faucet,
     reset: () => setStatus("idle"),
   };
