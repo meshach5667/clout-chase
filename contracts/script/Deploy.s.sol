@@ -3,11 +3,12 @@ pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {CloutToken} from "../src/CloutToken.sol";
-import {AttentionOracle} from "../src/AttentionOracle.sol";
+import {AttentionOracleV2} from "../src/AttentionOracleV2.sol";
 import {CloutChaseMarket} from "../src/CloutChaseMarket.sol";
+import {CloutCashout} from "../src/CloutCashout.sol";
 
 /// @notice Deploys the full CloutChase stack to Monad.
-/// forge script script/Deploy.s.sol --rpc-url $MONAD_RPC_URL --broadcast --verify
+/// forge script script/Deploy.s.sol --rpc-url $MONAD_RPC_URL --broadcast
 contract Deploy is Script {
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
@@ -16,8 +17,9 @@ contract Deploy is Script {
         vm.startBroadcast(pk);
 
         CloutToken token = new CloutToken(10_000_000e18);
-        AttentionOracle oracle = new AttentionOracle(1);
+        AttentionOracleV2 oracle = new AttentionOracleV2();
         CloutChaseMarket market = new CloutChaseMarket(address(token), address(oracle), deployer);
+        CloutCashout cashout = new CloutCashout{value: 2 ether}(address(token));
 
         // Approve market and seed initial active markets with real liquidity
         token.approve(address(market), type(uint256).max);
@@ -38,10 +40,15 @@ contract Deploy is Script {
         market.stake(m4, true, 2_200e18);
         market.stake(m4, false, 800e18);
 
+        uint256 m5 = market.createMarket("#DeadInternetTheory", "", 2, 500_000, 48 hours);
+        market.stake(m5, true, 3_400e18);
+        market.stake(m5, false, 5_100e18);
+
         vm.stopBroadcast();
 
         console.log("VITE_CLOUT_TOKEN_ADDRESS=%s", address(token));
         console.log("VITE_ORACLE_ADDRESS=%s", address(oracle));
         console.log("VITE_MARKET_ADDRESS=%s", address(market));
+        console.log("VITE_CASHOUT_ADDRESS=%s", address(cashout));
     }
 }

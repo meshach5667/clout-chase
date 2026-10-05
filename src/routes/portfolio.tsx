@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDownToLine, Loader2, Sparkles, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { formatUnits } from "viem";
 
 import { CashoutModal } from "@/components/cashout-modal";
 import { StatusBadge } from "@/components/market-bits";
@@ -117,7 +118,7 @@ function PortfolioPage() {
         <Metric
           label="Wallet MON Balance"
           value={`${formatToken(monBalance, 4)} MON`}
-          subtext={`≈ $${(Number(formatToken(monBalance, 4)) * 3).toFixed(2)} USD`}
+          subtext={`≈ $${(Number(formatUnits(monBalance ?? 0n, 18)) * 3).toFixed(2)} USD`}
         />
       </dl>
 

@@ -10,25 +10,33 @@ export const CLOUT_PER_MON = 2000n;
 export const MON_USD_PRICE = 3.0; // 1 MON = $3.00 USD
 
 /** Returns the MON equivalent of a CLOUT amount */
-export function cloutToMon(cloutAmount: bigint): number {
-  return Number(formatUnits(cloutAmount, TOKEN_DECIMALS)) / Number(CLOUT_PER_MON);
+export function cloutToMon(cloutAmount?: bigint | null): number {
+  if (!cloutAmount || cloutAmount <= 0n) return 0;
+  try {
+    return Number(formatUnits(cloutAmount, TOKEN_DECIMALS)) / Number(CLOUT_PER_MON);
+  } catch {
+    return 0;
+  }
 }
 
 /** Returns the USD equivalent of a CLOUT amount (via MON) */
-export function cloutToUsd(cloutAmount: bigint): number {
+export function cloutToUsd(cloutAmount?: bigint | null): number {
   return cloutToMon(cloutAmount) * MON_USD_PRICE;
 }
 
 /** Formats the MON value of a CLOUT amount, e.g. "0.05 MON" */
-export function formatCloutMon(cloutAmount: bigint, maxFractionDigits = 4): string {
+export function formatCloutMon(cloutAmount?: bigint | null, maxFractionDigits = 4): string {
   const mon = cloutToMon(cloutAmount);
-  return mon.toLocaleString("en-US", { maximumFractionDigits });
+  return mon.toLocaleString("en-US", { maximumFractionDigits: maxFractionDigits });
 }
 
 /** Formats the USD value of a CLOUT amount, e.g. "$1.50" */
-export function formatCloutUsd(cloutAmount: bigint, maxFractionDigits = 2): string {
+export function formatCloutUsd(cloutAmount?: bigint | null, maxFractionDigits = 2): string {
   const usd = cloutToUsd(cloutAmount);
-  return usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits });
+  return usd.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maxFractionDigits,
+  });
 }
 
 /** YES probability (0-1) implied by the current parimutuel pools. */
@@ -62,9 +70,14 @@ export function previewPayout(
   return amount + (distributable * amount) / winPool;
 }
 
-export function formatToken(value: bigint, maxFractionDigits = 2): string {
-  const asNumber = Number(formatUnits(value, TOKEN_DECIMALS));
-  return asNumber.toLocaleString("en-US", { maximumFractionDigits: maxFractionDigits });
+export function formatToken(value?: bigint | null, maxFractionDigits = 2): string {
+  if (!value) return "0";
+  try {
+    const asNumber = Number(formatUnits(value, TOKEN_DECIMALS));
+    return asNumber.toLocaleString("en-US", { maximumFractionDigits: maxFractionDigits });
+  } catch {
+    return "0";
+  }
 }
 
 export function parseToken(value: string): bigint {
