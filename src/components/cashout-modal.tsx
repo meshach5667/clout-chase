@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Coins, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowRight, Coins, Loader2, Sparkles, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -58,17 +58,21 @@ export function CashoutModal({
   // Maximum CLOUT that can be cashed out given the current reserve
   const maxCloutFromReserve = reserve * CLOUT_PER_MON;
 
-  const error =
-    parsedClout > cloutBalance
+  const error = !wallet.isConnected
+    ? null
+    : parsedClout > cloutBalance
       ? "Amount exceeds your CLOUT balance"
       : parsedClout > 0n && parsedClout < 10n ** 18n
         ? "Minimum cashout is 1 CLOUT"
         : parsedClout > 0n && parsedClout > maxCloutFromReserve
-          ? `Exceeds contract reserve. Max cashout: ${formatToken(maxCloutFromReserve)} CLOUT (${formatToken(reserve, 4)} MON available)`
+          ? `Exceeds contract reserve. Max: ${formatToken(maxCloutFromReserve)} CLOUT`
           : null;
 
   async function handleCashout() {
     if (!wallet.isConnected) {
+      if (wallet.isMobile) {
+        onOpenChange(false);
+      }
       await wallet.connect().catch(() => {});
       return;
     }
@@ -77,7 +81,7 @@ export function CashoutModal({
     try {
       await cashout(parsedClout);
       toast.success(
-        `Successfully cashed out ${formatToken(parsedClout)} CLOUT! ${formatCloutMon(parsedClout)} MON ($${formatCloutUsd(parsedClout)}) sent to your wallet.`,
+        `Cashed out ${formatToken(parsedClout)} CLOUT → ${formatCloutMon(parsedClout)} MON ($${formatCloutUsd(parsedClout)}) sent to your wallet!`,
       );
       setAmount("");
       onOpenChange(false);
@@ -88,87 +92,76 @@ export function CashoutModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="p-4 sm:p-6 gap-3 sm:gap-4 max-w-md w-full">
+        <DialogHeader className="pr-8 text-left">
           <div className="flex items-center gap-2 text-primary">
-            <Coins className="size-5" />
-            <DialogTitle className="text-xl">Cash Out to Native MON</DialogTitle>
+            <Coins className="size-5 shrink-0" />
+            <DialogTitle className="text-lg sm:text-xl font-bold">
+              Cash Out to Native MON
+            </DialogTitle>
           </div>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
             Instantly convert your CLOUT tokens to native MON directly in your connected wallet.
           </DialogDescription>
         </DialogHeader>
 
         {/* Rate Banner */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
-          <div className="flex items-center justify-between text-xs">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs">
             <span className="font-medium text-muted-foreground">Fixed Conversion Rate</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 font-semibold text-primary">
-              <Sparkles className="size-3" /> 2,000 CLOUT = 1 MON = $3.00 USD
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 font-semibold text-primary w-fit text-[11px] sm:text-xs">
+              <Sparkles className="size-3 shrink-0" /> 2,000 CLOUT = 1 MON = $3.00 USD
             </span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            MON is sent directly to your connected Web3 address on Monad Testnet so you can withdraw
-            freely.
+            Native MON is sent directly to your connected Monad address for free transfer and withdrawal.
           </p>
         </div>
 
         {/* Reserve Warning */}
         {reserve < 10n ** 18n && (
-          <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            <div>
-              <p className="font-semibold">Reserve low</p>
-              <p className="mt-0.5 text-destructive/80">
-                The cashout contract has {formatToken(reserve, 4)} MON remaining. Large cashouts may
-                fail until the reserve is topped up.
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">Reserve Alert</p>
+              <p className="mt-0.5 text-[11px] text-destructive/90 leading-tight">
+                Cashout contract reserve is low ({formatToken(reserve, 4)} MON remaining). Cashouts are capped at {formatToken(maxCloutFromReserve)} CLOUT.
               </p>
             </div>
           </div>
         )}
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-3">
           {/* Balances Display */}
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-lg bg-surface-2 p-2.5">
-              <span className="text-muted-foreground">CLOUT in Wallet</span>
-              <p className="numeric mt-0.5 font-bold text-foreground">
+            <div className="rounded-xl bg-surface-2 p-2.5 min-w-0">
+              <span className="text-[11px] text-muted-foreground block truncate">CLOUT in Wallet</span>
+              <p className="numeric mt-0.5 text-sm sm:text-base font-bold text-foreground truncate">
                 {formatToken(cloutBalance)} CLOUT
               </p>
-              <p className="numeric text-[11px] text-muted-foreground">
+              <p className="numeric text-[11px] text-muted-foreground truncate">
                 ≈ {formatCloutMon(cloutBalance)} MON (${formatCloutUsd(cloutBalance)})
               </p>
             </div>
-            <div className="rounded-lg bg-surface-2 p-2.5">
-              <span className="text-muted-foreground">Native MON in Wallet</span>
-              <p className="numeric mt-0.5 font-bold text-primary">
+            <div className="rounded-xl bg-surface-2 p-2.5 min-w-0">
+              <span className="text-[11px] text-muted-foreground block truncate">Native MON in Wallet</span>
+              <p className="numeric mt-0.5 text-sm sm:text-base font-bold text-primary truncate">
                 {formatToken(monBalance, 4)} MON
               </p>
-              <p className="numeric text-[11px] text-muted-foreground">
+              <p className="numeric text-[11px] text-muted-foreground truncate">
                 ≈ ${(Number(formatToken(monBalance, 4)) * 3).toFixed(2)} USD
               </p>
             </div>
           </div>
 
-          {/* Contract Reserve Info */}
-          <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-xs">
-            <span className="text-muted-foreground">Contract Reserve</span>
-            <span className="numeric font-semibold text-foreground">
-              {formatToken(reserve, 4)} MON
-              <span className="ml-1 text-muted-foreground">
-                (max {formatToken(maxCloutFromReserve)} CLOUT)
-              </span>
-            </span>
-          </div>
-
           {/* Amount Input */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
               <Label
                 htmlFor="cashout-amount"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Amount to cash out
+                Amount to Cash Out
               </Label>
               <button
                 type="button"
@@ -185,20 +178,20 @@ export function CashoutModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                 placeholder="0.0"
-                className="numeric pr-16 text-lg font-bold"
+                className="numeric pr-16 text-base sm:text-lg font-bold h-11"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground pointer-events-none">
                 CLOUT
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-4 gap-1.5">
               {["500", "1000", "2000"].map((preset) => (
                 <Button
                   key={preset}
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="flex-1 text-xs"
+                  className="text-xs h-9"
                   onClick={() => setAmount(preset)}
                 >
                   {preset}
@@ -208,7 +201,7 @@ export function CashoutModal({
                 type="button"
                 size="sm"
                 variant="outline"
-                className="flex-1 text-xs"
+                className="text-xs h-9 font-semibold text-primary"
                 onClick={() => setAmount(formatToken(cloutBalance).replace(/,/g, ""))}
               >
                 Max
@@ -217,19 +210,21 @@ export function CashoutModal({
           </div>
 
           {/* Conversion Preview Box */}
-          <div className="rounded-xl border border-border bg-card p-3.5">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-xl border border-border bg-card p-3">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground block">
               You will receive
             </span>
-            <div className="mt-2 flex items-baseline justify-between">
-              <div>
-                <span className="numeric text-2xl font-bold text-primary">
+            <div className="mt-1 flex items-baseline justify-between gap-2">
+              <div className="min-w-0">
+                <span className="numeric text-xl sm:text-2xl font-bold text-primary">
                   {monReceive.toLocaleString("en-US", { maximumFractionDigits: 4 })}
                 </span>
-                <span className="ml-1.5 text-sm font-semibold text-muted-foreground">MON</span>
+                <span className="ml-1.5 text-xs sm:text-sm font-semibold text-muted-foreground">
+                  MON
+                </span>
               </div>
-              <div className="text-right">
-                <span className="numeric text-lg font-semibold text-foreground">
+              <div className="text-right shrink-0">
+                <span className="numeric text-base sm:text-lg font-semibold text-foreground">
                   ${usdValue.toFixed(2)}
                 </span>
                 <span className="ml-1 text-xs text-muted-foreground">USD</span>
@@ -237,23 +232,31 @@ export function CashoutModal({
             </div>
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-xs text-destructive font-medium">{error}</p>}
         </div>
 
         <Button
           onClick={() => void handleCashout()}
-          disabled={busy || parsedClout <= 0n || Boolean(error)}
+          disabled={busy || (wallet.isConnected && (parsedClout <= 0n || Boolean(error)))}
           size="lg"
-          className="w-full font-semibold"
+          className="w-full font-semibold h-12 text-sm sm:text-base mt-1"
         >
           {busy ? (
             <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              {status === "approving" ? "Approving CLOUT…" : "Transferring MON to your wallet…"}
+              <Loader2 className="mr-2 size-4 animate-spin shrink-0" />
+              <span className="truncate">
+                {status === "approving" ? "Approving CLOUT…" : "Transferring MON to wallet…"}
+              </span>
+            </>
+          ) : !wallet.isConnected ? (
+            <>
+              <Wallet className="mr-2 size-4 shrink-0" />
+              Connect Wallet to Cash Out
             </>
           ) : (
             <>
-              Cash out to Connected Wallet <ArrowRight className="ml-2 size-4" />
+              <span className="truncate">Cash out to Connected Wallet</span>
+              <ArrowRight className="ml-2 size-4 shrink-0" />
             </>
           )}
         </Button>

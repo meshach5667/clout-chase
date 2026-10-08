@@ -52,37 +52,45 @@ function LeaderboardPage() {
           return (
             <div
               key={entry.address}
-              className={cn("flex flex-wrap items-center gap-3 p-4", isYou && "bg-primary/5")}
+              className={cn(
+                "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4",
+                isYou && "bg-primary/5",
+              )}
             >
-              <span className="numeric w-8 text-sm text-muted-foreground">#{index + 1}</span>
-              {index === 0 && <Crown className="size-4 text-primary" />}
-              <span className="numeric text-sm font-medium">{shortenAddress(entry.address)}</span>
-              {isYou && <Badge variant="outline">You</Badge>}
-              <div className="ml-auto flex items-center gap-6 text-right text-sm">
+              <div className="flex items-center gap-2.5">
+                <span className="numeric w-7 text-xs sm:text-sm font-semibold text-muted-foreground">
+                  #{index + 1}
+                </span>
+                {index === 0 && <Crown className="size-4 text-primary shrink-0" />}
+                <span className="numeric text-sm font-medium">{shortenAddress(entry.address)}</span>
+                {isYou && <Badge variant="outline" className="text-xs">You</Badge>}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 sm:gap-6 text-right text-xs sm:text-sm pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground">
                     Win rate
                   </p>
-                  <p className="numeric">{winRate}%</p>
+                  <p className="numeric font-medium">{winRate}%</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground">
                     Staked
                   </p>
-                  <p className="numeric">{formatToken(entry.totalStaked, 0)} CLOUT</p>
-                  <p className="numeric text-[11px] text-muted-foreground">
+                  <p className="numeric font-medium truncate">{formatToken(entry.totalStaked, 0)} CLOUT</p>
+                  <p className="numeric text-[10px] text-muted-foreground truncate">
                     ${formatCloutUsd(entry.totalStaked)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground">
                     Profit
                   </p>
-                  <p className="numeric font-semibold text-primary">
+                  <p className="numeric font-semibold text-primary truncate">
                     +{formatToken(entry.totalWon, 0)} CLOUT
                   </p>
-                  <p className="numeric text-[11px] font-semibold text-yes">
-                    +${formatCloutUsd(entry.totalWon)} USD
+                  <p className="numeric text-[10px] font-semibold text-yes truncate">
+                    +${formatCloutUsd(entry.totalWon)}
                   </p>
                 </div>
               </div>

@@ -101,20 +101,22 @@ export function MarketCard({ market, now }: { market: Market; now: number }) {
 
       <OddsRail yesPool={market.yesPool} noPool={market.noPool} />
 
-      <div className="flex items-center gap-4 border-t border-border/70 pt-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <TrendingUp className="size-3.5" />
-          <span className="numeric font-medium">{formatToken(total)} CLOUT</span>
-          <span className="text-[11px] font-semibold text-yes">(${formatCloutUsd(total)})</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5 min-w-0">
+          <TrendingUp className="size-3.5 shrink-0" />
+          <span className="numeric font-medium truncate">{formatToken(total)} CLOUT</span>
+          <span className="text-[11px] font-semibold text-yes shrink-0">(${formatCloutUsd(total)})</span>
         </span>
-        <span className="flex items-center gap-1.5">
-          <Users className="size-3.5" /> {CATEGORIES[market.category]}
-        </span>
-        {total > 5_000n * 10n ** 18n && (
-          <span className="ml-auto flex items-center gap-1 text-accent">
-            <Flame className="size-3.5" /> Hot
+        <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
+          <span className="flex items-center gap-1.5">
+            <Users className="size-3.5 shrink-0" /> {CATEGORIES[market.category]}
           </span>
-        )}
+          {total > 5_000n * 10n ** 18n && (
+            <span className="flex items-center gap-1 text-accent font-medium">
+              <Flame className="size-3.5" /> Hot
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

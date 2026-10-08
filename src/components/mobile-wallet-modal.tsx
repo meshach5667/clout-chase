@@ -104,8 +104,8 @@ export function MobileWalletModal() {
         }
       }}
     >
-      <DialogContent className="max-w-md border-border/80 bg-surface sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-2 text-left">
+      <DialogContent className="max-w-md border-border/80 bg-surface p-4 sm:p-6">
+        <DialogHeader className="space-y-2 text-left pr-8">
           <div className="flex items-center gap-2">
             <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
               <Smartphone className="size-5" />

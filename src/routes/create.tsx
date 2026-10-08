@@ -94,13 +94,14 @@ function CreatePage() {
 
         <div className="space-y-2">
           <Label>Category</Label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((label, index) => (
               <Button
                 key={label}
                 type="button"
                 variant={category === index ? "default" : "secondary"}
                 onClick={() => setCategory(index)}
+                className="h-9 text-xs sm:text-sm"
               >
                 {label}
               </Button>
@@ -115,7 +116,7 @@ function CreatePage() {
             inputMode="numeric"
             value={threshold}
             onChange={(e) => setThreshold(e.target.value.replace(/[^0-9]/g, ""))}
-            className="numeric"
+            className="numeric text-base sm:text-sm h-11"
           />
           <p className="text-xs text-muted-foreground">
             YES wins if the oracle score reaches this number before the market resolves.
@@ -131,7 +132,7 @@ function CreatePage() {
                 type="button"
                 variant={duration === hours ? "default" : "secondary"}
                 onClick={() => setDuration(hours)}
-                className={cn("numeric")}
+                className={cn("numeric h-9 text-xs sm:text-sm flex-1 sm:flex-initial")}
               >
                 {hours}h
               </Button>
@@ -143,7 +144,7 @@ function CreatePage() {
 
         <Button
           size="lg"
-          className="w-full font-semibold"
+          className="w-full font-semibold h-12 text-sm sm:text-base mt-2"
           disabled={busy || Boolean(invalid)}
           onClick={() => void submit()}
         >

@@ -77,19 +77,21 @@ function PortfolioPage() {
         </div>
         <Button
           onClick={() => setCashoutOpen(true)}
-          className="gap-2 font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+          className="gap-2 font-semibold bg-yes hover:bg-yes/90 text-yes-foreground w-full sm:w-auto h-11 sm:h-10"
         >
           <ArrowDownToLine className="size-4" /> Cash out CLOUT to MON
         </Button>
       </div>
 
       {/* Conversion Banner */}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            Rate: 2,000 CLOUT = 1 MON = $3.00 USD
-          </span>
+      <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-primary shrink-0" />
+            <span className="text-sm font-semibold text-foreground">
+              Rate: 2,000 CLOUT = 1 MON = $3.00 USD
+            </span>
+          </div>
           <span className="text-xs text-muted-foreground">
             (Rewards convert directly to native MON in your wallet)
           </span>
@@ -98,7 +100,7 @@ function PortfolioPage() {
           variant="outline"
           size="sm"
           onClick={() => setCashoutOpen(true)}
-          className="text-xs font-semibold"
+          className="text-xs font-semibold w-full sm:w-auto h-9"
         >
           Open Cashout Calculator
         </Button>
@@ -178,11 +180,11 @@ function PortfolioPage() {
               </div>
               <StatusBadge market={market} now={now} />
               {claimable ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <Button
                     size="sm"
                     disabled={busy}
-                    className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+                    className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground h-10 sm:h-9"
                     onClick={async () => {
                       try {
                         await claimAndCashout(market.id);
@@ -201,6 +203,7 @@ function PortfolioPage() {
                     size="sm"
                     variant="outline"
                     disabled={busy}
+                    className="h-10 sm:h-9"
                     onClick={async () => {
                       try {
                         await claim(market.id);

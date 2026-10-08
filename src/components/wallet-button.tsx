@@ -129,7 +129,7 @@ export function WalletButton() {
             </div>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64 p-2">
+        <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-64 max-w-xs p-2">
           {/* Balance Breakdown Header */}
           <div className="rounded-lg bg-surface-2 p-2.5 mb-2 space-y-1.5">
             <div className="flex items-center justify-between text-xs">

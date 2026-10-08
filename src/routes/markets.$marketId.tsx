@@ -167,10 +167,10 @@ function MarketDetail() {
                 </div>
 
                 {market.settled && won && !position.claimed && (
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                     <Button
                       disabled={busy}
-                      className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground"
+                      className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground h-11 sm:h-10 text-xs sm:text-sm"
                       onClick={async () => {
                         try {
                           await claimAndCashout(market.id);
@@ -182,13 +182,14 @@ function MarketDetail() {
                         }
                       }}
                     >
-                      {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
+                      {busy && <Loader2 className="mr-2 size-4 animate-spin shrink-0" />}
                       Claim as MON ({formatCloutMon(estPayout)} MON · ${formatCloutUsd(estPayout)})
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={busy}
+                      className="h-11 sm:h-10 text-xs sm:text-sm"
                       onClick={async () => {
                         try {
                           await claim(market.id);

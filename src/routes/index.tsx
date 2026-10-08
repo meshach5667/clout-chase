@@ -85,7 +85,7 @@ function MarketsPage() {
               </Button>
             </div>
 
-            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-6">
+            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-2 sm:gap-6 border-t border-border/70 pt-6">
               <Stat label="Open markets" value={String(liveCount)} />
               <Stat label="Total staked" value={`${formatToken(volume, 0)}`} />
               <Stat label="Settlement" value="On-chain" />
@@ -105,6 +105,7 @@ function MarketsPage() {
                 size="sm"
                 variant={filter === item ? "default" : "secondary"}
                 onClick={() => setFilter(item)}
+                className="h-8 text-xs"
               >
                 {item}
               </Button>
@@ -117,6 +118,7 @@ function MarketsPage() {
                 size="sm"
                 variant={category === index ? "default" : "secondary"}
                 onClick={() => setCategory(category === index ? null : index)}
+                className="h-8 text-xs"
               >
                 {label}
               </Button>
@@ -128,7 +130,7 @@ function MarketsPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search markets"
-              className="pl-9"
+              className="pl-9 h-10 text-base sm:text-sm"
             />
           </div>
         </div>
@@ -162,9 +164,9 @@ function MarketsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="panel p-4">
-      <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</dt>
-      <dd className="numeric mt-1 text-xl font-bold">{value}</dd>
+    <div className="panel p-2.5 sm:p-4 min-w-0">
+      <dt className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground truncate">{label}</dt>
+      <dd className="numeric mt-1 text-base sm:text-xl font-bold truncate">{value}</dd>
     </div>
   );
 }

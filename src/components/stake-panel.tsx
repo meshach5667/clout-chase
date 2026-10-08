@@ -102,15 +102,17 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="stake-amount">Stake</Label>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-1">
+          <Label htmlFor="stake-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Stake
+          </Label>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             {parsed > 0n && (
-              <span className="numeric text-xs font-semibold text-yes">
+              <span className="numeric font-semibold text-yes">
                 ≈ {formatCloutMon(parsed)} MON (${formatCloutUsd(parsed)})
               </span>
             )}
-            <span className="numeric text-xs text-muted-foreground">
+            <span className="numeric text-muted-foreground">
               Bal: {formatToken(balance)}
             </span>
           </div>
@@ -120,15 +122,16 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
           inputMode="decimal"
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-          className="numeric text-lg"
+          className="numeric text-base sm:text-lg h-11"
         />
-        <div className="flex gap-2">
+        <div className="grid grid-cols-5 gap-1.5">
           {QUICK.map((value) => (
             <Button
               key={value}
               type="button"
               size="sm"
               variant="secondary"
+              className="h-9 text-xs"
               onClick={() => setAmount(value)}
             >
               {value}
@@ -138,6 +141,7 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
             type="button"
             size="sm"
             variant="secondary"
+            className="h-9 text-xs font-semibold text-primary"
             onClick={() => setAmount(formatToken(balance).replace(/,/g, ""))}
           >
             Max
@@ -166,7 +170,7 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
       <Button
         onClick={() => void submit()}
         disabled={busy || Boolean(error)}
-        className="w-full font-semibold"
+        className="w-full font-semibold h-12 text-sm sm:text-base"
         size="lg"
       >
         {busy && <Loader2 className="mr-2 size-4 animate-spin" />}

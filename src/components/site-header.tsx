@@ -47,14 +47,14 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <nav className="flex items-center gap-1 overflow-x-auto border-t border-border/70 px-4 py-2 md:hidden">
+      <nav className="flex items-center gap-1 overflow-x-auto border-t border-border/70 px-3 py-1.5 md:hidden scrollbar-none">
         {NAV.map((item) => (
           <Link
             key={item.to}
             to={item.to}
             activeOptions={{ exact: item.to === "/" }}
-            activeProps={{ className: "bg-secondary text-foreground" }}
-            className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground"
+            activeProps={{ className: "bg-secondary text-foreground font-semibold" }}
+            className="whitespace-nowrap rounded-lg px-3.5 py-2 text-xs text-muted-foreground transition-colors min-h-[36px] flex items-center active:scale-95"
           >
             {item.label}
           </Link>
