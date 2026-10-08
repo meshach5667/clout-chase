@@ -277,6 +277,20 @@ export function useMonBalance(address?: Address): bigint {
   return bal.data?.value ?? 0n;
 }
 
+/**
+ * Native MON held in the cashout contract (the reserve that backs CLOUT→MON conversions).
+ * Returns 0n when the cashout contract is not configured.
+ */
+export function useCashoutReserve(): bigint {
+  useDemoState();
+  const bal = useBalance({
+    address: contracts.cashout,
+    query: { enabled: isOnChain && Boolean(contracts.cashout), refetchInterval: 15_000 },
+  });
+  if (!isOnChain) return 100n * 10n ** 18n; // 100 MON in demo mode
+  return bal.data?.value ?? 0n;
+}
+
 /** Portfolio: every market the wallet holds (or held) a position in. */
 export function usePortfolio(address?: Address) {
   const { data: markets, isLoading } = useMarkets();
@@ -659,6 +673,16 @@ export function normalizeError(error: unknown, label: string): Error {
   if (/AlreadyClaimed/.test(message)) return new Error("You have already claimed this market.");
   if (/InvalidDuration/.test(message))
     return new Error("Duration must be between 24 and 48 hours.");
+  // Cashout contract errors
+  if (/InsufficientReserve/.test(message))
+    return new Error(
+      "The cashout contract does not have enough MON to cover this conversion. Try a smaller amount or wait for the reserve to be topped up.",
+    );
+  if (/ZeroAmount/.test(message)) return new Error("Cannot cash out zero CLOUT.");
+  if (/TransferFailed/.test(message))
+    return new Error(
+      "Token transfer failed. Make sure you have approved enough CLOUT and have sufficient balance.",
+    );
   const short = message.split("\n")[0] ?? message;
   return new Error(`${label} failed: ${short.slice(0, 160)}`);
 }

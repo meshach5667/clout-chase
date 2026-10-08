@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Coins, DollarSign, Loader2, Sparkles, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, Coins, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useMarketActions, useMonBalance, useTokenBalance, useWallet } from "@/lib/web3/hooks";
 import {
+  useCashoutReserve,
+  useMarketActions,
+  useMonBalance,
+  useTokenBalance,
+  useWallet,
+} from "@/lib/web3/hooks";
+import {
+  CLOUT_PER_MON,
   cloutToMon,
   cloutToUsd,
   formatCloutMon,
@@ -32,6 +39,7 @@ export function CashoutModal({
   const wallet = useWallet();
   const cloutBalance = useTokenBalance(wallet.address);
   const monBalance = useMonBalance(wallet.address);
+  const reserve = useCashoutReserve();
   const { cashout, status } = useMarketActions();
   const [amount, setAmount] = useState("");
 
@@ -47,12 +55,17 @@ export function CashoutModal({
   const monReceive = cloutToMon(parsedClout);
   const usdValue = cloutToUsd(parsedClout);
 
+  // Maximum CLOUT that can be cashed out given the current reserve
+  const maxCloutFromReserve = reserve * CLOUT_PER_MON;
+
   const error =
     parsedClout > cloutBalance
       ? "Amount exceeds your CLOUT balance"
       : parsedClout > 0n && parsedClout < 10n ** 18n
         ? "Minimum cashout is 1 CLOUT"
-        : null;
+        : parsedClout > 0n && parsedClout > maxCloutFromReserve
+          ? `Exceeds contract reserve. Max cashout: ${formatToken(maxCloutFromReserve)} CLOUT (${formatToken(reserve, 4)} MON available)`
+          : null;
 
   async function handleCashout() {
     if (!wallet.isConnected) {
@@ -100,6 +113,20 @@ export function CashoutModal({
           </p>
         </div>
 
+        {/* Reserve Warning */}
+        {reserve < 10n ** 18n && (
+          <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div>
+              <p className="font-semibold">Reserve low</p>
+              <p className="mt-0.5 text-destructive/80">
+                The cashout contract has {formatToken(reserve, 4)} MON remaining. Large cashouts may
+                fail until the reserve is topped up.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 py-2">
           {/* Balances Display */}
           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -121,6 +148,17 @@ export function CashoutModal({
                 ≈ ${(Number(formatToken(monBalance, 4)) * 3).toFixed(2)} USD
               </p>
             </div>
+          </div>
+
+          {/* Contract Reserve Info */}
+          <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-xs">
+            <span className="text-muted-foreground">Contract Reserve</span>
+            <span className="numeric font-semibold text-foreground">
+              {formatToken(reserve, 4)} MON
+              <span className="ml-1 text-muted-foreground">
+                (max {formatToken(maxCloutFromReserve)} CLOUT)
+              </span>
+            </span>
           </div>
 
           {/* Amount Input */}
