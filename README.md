@@ -36,7 +36,7 @@ Users stake **`CLOUT`** tokens on market outcomes. Because markets use a **parim
 ## Key Features
 
 - **Parimutuel YES / NO Markets**: Dynamic crowd-priced odds with no liquidity provider impermanent loss.
-- **Attention Oracle V2**: Dual-mode oracle supporting verified multi-reporter consensus with permissionless testnet fallback so settlements never stall.
+- **Attention Oracle**: Dual-mode oracle supporting verified multi-reporter consensus with permissionless testnet fallback so settlements never stall.
 - **Fixed Valuation Framework**:
   - `2,000 CLOUT = 1 MON = $3.00 USD`
   - `1 CLOUT = 0.0005 MON = $0.0015 USD`
@@ -50,7 +50,6 @@ Users stake **`CLOUT`** tokens on market outcomes. Because markets use a **parim
 - **Interactive 3D Visuals**: Real-time reactive WebGL hero visual built with Three.js and React Three Fiber.
 - **Trader Portfolio & Leaderboard**: Track open bets, claim winnings, review historical win-rates, and inspect profit rankings.
 
----
 
 ## How It Works
 
