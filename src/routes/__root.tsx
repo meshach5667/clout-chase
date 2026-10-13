@@ -90,9 +90,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Web3Provider>
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen min-w-0 flex-col">
           <SiteHeader />
-          <main className="flex-1">
+          <main className="w-full min-w-0 flex-1">
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </main>

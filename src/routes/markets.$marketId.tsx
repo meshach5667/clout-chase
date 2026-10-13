@@ -193,7 +193,7 @@ function MarketDetail() {
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                     <Button
                       disabled={busy}
-                      className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground h-11 sm:h-10 text-xs sm:text-sm"
+                      className="h-auto min-h-11 whitespace-normal py-2 text-xs font-semibold leading-snug bg-yes text-yes-foreground hover:bg-yes/90 sm:min-h-10 sm:text-sm"
                       onClick={async () => {
                         try {
                           await claimAndCashout(market.id);

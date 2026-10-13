@@ -203,7 +203,7 @@ function PortfolioPage() {
                   <Button
                     size="sm"
                     disabled={busy}
-                    className="font-semibold bg-yes hover:bg-yes/90 text-yes-foreground h-10 sm:h-9"
+                    className="h-auto min-h-10 whitespace-normal py-2 font-semibold leading-snug bg-yes text-yes-foreground hover:bg-yes/90 sm:min-h-9"
                     onClick={async () => {
                       try {
                         await claimAndCashout(market.id);

@@ -167,7 +167,7 @@ export function MobileWalletModal() {
           <div className="mt-2 space-y-4">
             {/* Wallet Options */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs font-semibold text-foreground">
                 <span>Select your wallet</span>
                 <span className="text-[11px] text-muted-foreground">Redirects back to browser</span>
               </div>
@@ -176,25 +176,25 @@ export function MobileWalletModal() {
               <button
                 onClick={() => void handleConnectMetaMask()}
                 disabled={Boolean(connectingWallet)}
-                className="flex w-full items-center justify-between rounded-xl border border-primary/40 bg-primary/10 p-3.5 text-left transition hover:bg-primary/15 active:scale-[0.99]"
+                className="flex w-full items-center justify-between gap-2 rounded-xl border border-primary/40 bg-primary/10 p-3 text-left transition hover:bg-primary/15 active:scale-[0.99] sm:p-3.5"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/20 text-xl font-bold">
                     🦊
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 font-semibold text-sm text-foreground">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 font-semibold text-sm text-foreground">
                       MetaMask
-                      <span className="inline-flex items-center gap-0.5 rounded bg-primary px-1.5 py-0.2 text-[10px] font-bold text-primary-foreground">
+                      <span className="hidden items-center gap-0.5 rounded bg-primary px-1.5 py-0.2 text-[10px] font-bold text-primary-foreground sm:inline-flex">
                         <Sparkles className="size-2.5" /> Recommended
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">
                       Connect via MetaMask app &amp; return to browser
                     </p>
                   </div>
                 </div>
-                <span className="rounded-lg bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary">
+                <span className="shrink-0 rounded-lg bg-primary/20 px-2 py-1 text-[11px] font-semibold text-primary sm:px-2.5 sm:text-xs">
                   Connect
                 </span>
               </button>
@@ -203,20 +203,22 @@ export function MobileWalletModal() {
               <button
                 onClick={() => void handleConnectCoinbase()}
                 disabled={Boolean(connectingWallet)}
-                className="flex w-full items-center justify-between rounded-xl border border-border/70 bg-surface-2 p-3.5 text-left transition hover:bg-surface-2/80 active:scale-[0.99]"
+                className="flex w-full items-center justify-between gap-2 rounded-xl border border-border/70 bg-surface-2 p-3 text-left transition hover:bg-surface-2/80 active:scale-[0.99] sm:p-3.5"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-xl font-bold">
                     🔵
                   </div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">Coinbase Wallet</div>
-                    <p className="text-[11px] text-muted-foreground">
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-sm text-foreground">
+                      Coinbase Wallet
+                    </div>
+                    <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">
                       Connect via Coinbase app &amp; return to browser
                     </p>
                   </div>
                 </div>
-                <span className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground">
+                <span className="shrink-0 rounded-lg bg-secondary px-2 py-1 text-[11px] font-semibold text-foreground sm:px-2.5 sm:text-xs">
                   Connect
                 </span>
               </button>
@@ -234,19 +236,23 @@ export function MobileWalletModal() {
                 Install <strong>MetaMask Mobile</strong> to trade on Monad Testnet:
               </p>
 
-              <Button asChild variant="default" className="w-full gap-2 font-medium">
+              <Button
+                asChild
+                variant="default"
+                className="h-auto min-h-10 w-full gap-2 whitespace-normal py-2 font-medium"
+              >
                 <a
                   href={downloadUrls.metaMask}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center"
+                  className="flex items-center justify-center whitespace-normal text-center leading-snug"
                 >
                   <Download className="size-4" />
-                  Download MetaMask from {platformLabel}
+                  <span>Download MetaMask from {platformLabel}</span>
                 </a>
               </Button>
 
-              <div className="flex items-center justify-center gap-4 pt-1 text-[11px] text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pt-1 text-[11px] text-muted-foreground">
                 <span>Or get:</span>
                 <a
                   href={downloadUrls.coinbase}
@@ -335,9 +341,10 @@ export function MobileWalletModal() {
             {/* Network Info */}
             <div className="flex items-start gap-2 rounded-lg border border-border/50 bg-surface-2/40 p-3 text-[11px] text-muted-foreground">
               <Info className="size-3.5 shrink-0 text-primary mt-0.5" />
-              <div>
+              <div className="min-w-0 break-words">
                 <strong className="text-foreground">Monad Testnet:</strong> Chain ID{" "}
-                <code>10143</code> · RPC: <code>https://testnet-rpc.monad.xyz</code> · Symbol:{" "}
+                <code>10143</code> · RPC:{" "}
+                <code className="break-all">https://testnet-rpc.monad.xyz</code> · Symbol:{" "}
                 <code>MON</code>
               </div>
             </div>

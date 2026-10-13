@@ -43,14 +43,15 @@ export function WalletButton() {
         <Button
           onClick={() => void handleConnect()}
           disabled={busy || wallet.isConnecting}
-          className="gap-2 font-semibold"
+          aria-label="Connect wallet"
+          className="h-9 w-9 gap-0 px-0 font-semibold sm:h-9 sm:w-auto sm:gap-2 sm:px-4"
         >
           {busy || wallet.isConnecting ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <Wallet className="size-4" />
           )}
-          Connect wallet
+          <span className="hidden sm:inline">Connect wallet</span>
         </Button>
       );
     }
@@ -63,13 +64,17 @@ export function WalletButton() {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button disabled={busy || wallet.isConnecting} className="gap-2 font-semibold">
+            <Button
+              disabled={busy || wallet.isConnecting}
+              aria-label="Connect wallet"
+              className="h-9 w-9 gap-0 px-0 font-semibold sm:w-auto sm:gap-2 sm:px-4"
+            >
               {busy || wallet.isConnecting ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Wallet className="size-4" />
               )}
-              Connect wallet
+              <span className="hidden sm:inline">Connect wallet</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -91,22 +96,29 @@ export function WalletButton() {
       <Button
         onClick={() => void handleConnect()}
         disabled={busy || wallet.isConnecting}
-        className="gap-2 font-semibold"
+        aria-label="Connect wallet"
+        className="h-9 w-9 gap-0 px-0 font-semibold sm:w-auto sm:gap-2 sm:px-4"
       >
         {busy || wallet.isConnecting ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
           <Wallet className="size-4" />
         )}
-        Connect wallet
+        <span className="hidden sm:inline">Connect wallet</span>
       </Button>
     );
   }
 
   if (wallet.wrongNetwork) {
     return (
-      <Button variant="destructive" onClick={() => void wallet.switchToMonad()}>
-        Switch to Monad
+      <Button
+        variant="destructive"
+        onClick={() => void wallet.switchToMonad()}
+        aria-label="Switch to Monad"
+        className="h-9 px-2 text-xs sm:px-4 sm:text-sm"
+      >
+        <span className="sm:hidden">Switch</span>
+        <span className="hidden sm:inline">Switch to Monad</span>
       </Button>
     );
   }
@@ -115,8 +127,13 @@ export function WalletButton() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" className="gap-2 px-3 py-1.5 h-auto">
-            <div className="flex flex-col items-end leading-tight text-right">
+          <Button
+            variant="secondary"
+            aria-label={`Wallet ${shortenAddress(wallet.address ?? "")}, ${formatToken(balance)} CLOUT`}
+            className="h-9 min-w-9 gap-0 px-2 sm:h-auto sm:gap-2 sm:px-3 sm:py-1.5"
+          >
+            <Wallet className="size-4 sm:hidden" />
+            <div className="hidden min-w-0 flex-col items-end leading-tight text-right sm:flex">
               <div className="flex items-center gap-1.5">
                 <span className="numeric font-bold text-primary">{formatToken(balance)} CLOUT</span>
                 <span className="numeric text-xs font-semibold text-yes">
@@ -129,7 +146,7 @@ export function WalletButton() {
             </div>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-64 max-w-xs p-2">
+        <DropdownMenuContent align="end" className="w-[calc(100vw-1.5rem)] max-w-xs p-2 sm:w-64">
           {/* Balance Breakdown Header */}
           <div className="rounded-lg bg-surface-2 p-2.5 mb-2 space-y-1.5">
             <div className="flex items-center justify-between text-xs">

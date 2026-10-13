@@ -80,7 +80,7 @@ export function NotificationsMenu({ className }: { className?: string }) {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
+      <DropdownMenuContent align="end" className="w-[calc(100vw-1.5rem)] max-w-96 p-0 sm:w-96">
         <div className="flex items-center justify-between border-b border-border/70 p-3.5">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm text-foreground">Activity</span>
