@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Activity } from "lucide-react";
 
 import { WalletButton } from "@/components/wallet-button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationsMenu } from "@/components/notifications-menu";
 
 const NAV = [
   { to: "/", label: "Markets" },
@@ -35,7 +37,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <div className="hidden items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] sm:flex">
             <span className="font-semibold text-primary">2,000 CLOUT</span>
             <span className="text-muted-foreground">=</span>
@@ -43,6 +45,8 @@ export function SiteHeader() {
             <span className="text-muted-foreground">=</span>
             <span className="font-semibold text-yes">$3.00 USD</span>
           </div>
+          <NotificationsMenu />
+          <ThemeToggle />
           <WalletButton />
         </div>
       </div>

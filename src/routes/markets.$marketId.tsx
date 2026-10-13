@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Share2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { OddsRail, StatusBadge } from "@/components/market-bits";
+import { SharePredictionModal, type SharePredictionData } from "@/components/share-prediction-modal";
 import { StakePanel } from "@/components/stake-panel";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
@@ -55,6 +57,7 @@ function MarketDetail() {
   const wallet = useWallet();
   const position = usePosition(id, wallet.address);
   const { claim, claimAndCashout, settle, status } = useMarketActions();
+  const [shareData, setShareData] = useState<SharePredictionData | null>(null);
   const busy = status === "pending" || status === "confirming" || status === "approving";
 
   if (isLoading) {
@@ -150,9 +153,28 @@ function MarketDetail() {
 
           {size > 0n && (
             <div className="panel p-5">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                Your position
-              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                  Your position
+                </h2>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-primary"
+                  onClick={() => {
+                    const side = position.yes > 0n ? "YES" : "NO";
+                    setShareData({
+                      market,
+                      side: side as "YES" | "NO",
+                      stakeAmount: size,
+                      oddsAtCall: 24,
+                      userAddress: wallet.address,
+                    });
+                  }}
+                >
+                  <Share2 className="size-3.5" /> Share Call
+                </Button>
+              </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="numeric text-2xl font-bold">

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Search } from "lucide-react";
 
+import { CreatorSpotlightSection } from "@/components/creator-spotlight";
 import { HeroScene } from "@/components/hero-scene";
 import { MarketCard, MarketCardSkeleton } from "@/components/market-bits";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,10 @@ function MarketsPage() {
 
           <HeroScene className="h-[280px] w-full md:h-[460px]" />
         </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pt-8 pb-2">
+        <CreatorSpotlightSection />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-8">

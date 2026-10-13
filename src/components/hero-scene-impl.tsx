@@ -5,37 +5,43 @@ import * as THREE from "three";
 
 function useTokenColors() {
   const [colors, setColors] = useState({
-    primary: "#a3e635",
-    surface: "#22242e",
-    muted: "#6b7280",
+    primary: "#2563eb",
+    surface: "#111c38",
+    muted: "#64748b",
   });
 
   useEffect(() => {
-    const probe = document.createElement("span");
-    probe.style.display = "none";
-    document.body.appendChild(probe);
-    const ctx = document.createElement("canvas").getContext("2d");
-    const read = (name: string, fallback: string) => {
-      probe.style.color = `var(${name})`;
-      const resolved = getComputedStyle(probe).color;
-      if (!ctx) return fallback;
-      try {
-        ctx.clearRect(0, 0, 1, 1);
-        ctx.fillStyle = resolved;
-        ctx.fillRect(0, 0, 1, 1);
-        const d = ctx.getImageData(0, 0, 1, 1).data;
-        return new THREE.Color((d[0] ?? 0) / 255, (d[1] ?? 0) / 255, (d[2] ?? 0) / 255).getStyle();
-      } catch {
-        return fallback;
-      }
+    const updateColors = () => {
+      const probe = document.createElement("span");
+      probe.style.display = "none";
+      document.body.appendChild(probe);
+      const ctx = document.createElement("canvas").getContext("2d");
+      const read = (name: string, fallback: string) => {
+        probe.style.color = `var(${name})`;
+        const resolved = getComputedStyle(probe).color;
+        if (!ctx) return fallback;
+        try {
+          ctx.clearRect(0, 0, 1, 1);
+          ctx.fillStyle = resolved;
+          ctx.fillRect(0, 0, 1, 1);
+          const d = ctx.getImageData(0, 0, 1, 1).data;
+          return new THREE.Color((d[0] ?? 0) / 255, (d[1] ?? 0) / 255, (d[2] ?? 0) / 255).getStyle();
+        } catch {
+          return fallback;
+        }
+      };
+      const next = {
+        primary: read("--primary", "#2563eb"),
+        surface: read("--surface-2", "#111c38"),
+        muted: read("--muted-foreground", "#64748b"),
+      };
+      probe.remove();
+      setColors(next);
     };
-    const next = {
-      primary: read("--primary", "#a3e635"),
-      surface: read("--surface-2", "#22242e"),
-      muted: read("--muted-foreground", "#6b7280"),
-    };
-    probe.remove();
-    setColors(next);
+
+    updateColors();
+    window.addEventListener("cloutchase-theme-change", updateColors);
+    return () => window.removeEventListener("cloutchase-theme-change", updateColors);
   }, []);
 
   return colors;

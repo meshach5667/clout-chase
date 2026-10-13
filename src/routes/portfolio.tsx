@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDownToLine, Loader2, Sparkles, Wallet } from "lucide-react";
+import { ArrowDownToLine, Loader2, Share2, Sparkles, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
 
 import { CashoutModal } from "@/components/cashout-modal";
 import { StatusBadge } from "@/components/market-bits";
+import { SharePredictionModal, type SharePredictionData } from "@/components/share-prediction-modal";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
 import {
@@ -47,6 +48,7 @@ function PortfolioPage() {
   const { entries, isLoading } = usePortfolio(wallet.address);
   const { claim, claimAndCashout, status } = useMarketActions();
   const [cashoutOpen, setCashoutOpen] = useState(false);
+  const [shareData, setShareData] = useState<SharePredictionData | null>(null);
   const busy = status === "pending" || status === "confirming" || status === "approving";
 
   if (!wallet.isConnected) {
@@ -179,6 +181,22 @@ function PortfolioPage() {
                 </p>
               </div>
               <StatusBadge market={market} now={now} />
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-primary"
+                onClick={() =>
+                  setShareData({
+                    market,
+                    side: side as "YES" | "NO",
+                    stakeAmount: size,
+                    oddsAtCall: 24,
+                    userAddress: wallet.address,
+                  })
+                }
+              >
+                <Share2 className="size-3.5" /> Share
+              </Button>
               {claimable ? (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <Button
@@ -227,6 +245,11 @@ function PortfolioPage() {
       </div>
 
       <CashoutModal open={cashoutOpen} onOpenChange={setCashoutOpen} />
+      <SharePredictionModal
+        data={shareData}
+        open={Boolean(shareData)}
+        onOpenChange={(open) => !open && setShareData(null)}
+      />
     </div>
   );
 }
