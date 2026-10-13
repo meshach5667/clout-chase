@@ -145,7 +145,7 @@ function CreatePage() {
         <Button
           size="lg"
           className="w-full font-semibold h-12 text-sm sm:text-base mt-2"
-          disabled={busy || Boolean(invalid)}
+          disabled={busy || (wallet.isConnected && Boolean(invalid))}
           onClick={() => void submit()}
         >
           {busy && <Loader2 className="mr-2 size-4 animate-spin" />}

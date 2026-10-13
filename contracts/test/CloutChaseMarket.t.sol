@@ -266,9 +266,9 @@ contract CloutChaseMarketTest is Test {
 
     // ---------------------------------------------------------------- fuzz
 
-    function testFuzz_SolvencyAfterSettlement(uint96 yesAmt, uint96 noAmt) public {
-        vm.assume(yesAmt >= 1e18 && noAmt >= 1e18);
-        vm.assume(uint256(yesAmt) < 5_000e18 && uint256(noAmt) < 5_000e18);
+    function testFuzz_SolvencyAfterSettlement(uint96 rawYesAmt, uint96 rawNoAmt) public {
+        uint96 yesAmt = uint96(bound(rawYesAmt, 1e18, 5_000e18));
+        uint96 noAmt = uint96(bound(rawNoAmt, 1e18, 5_000e18));
 
         uint256 id = _create();
         vm.prank(alice);

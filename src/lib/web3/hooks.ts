@@ -15,6 +15,7 @@ import {
   useDisconnect,
   usePublicClient,
   useReadContract,
+  useSendTransaction,
   useSwitchChain,
   useWriteContract,
 } from "wagmi";
@@ -23,6 +24,7 @@ import type { Address } from "viem";
 import { cashoutAbi, marketAbi, oracleAbi, tokenAbi } from "./abis";
 import { monadTestnet } from "./chains";
 import { contracts, contractsConfigured } from "./config";
+import { CLOUT_PER_MON } from "./math";
 import { isMobileDevice, isMobileWithoutWallet, openMobileWalletModal } from "./mobile-wallet";
 import {
   DEMO_WALLET,
@@ -271,6 +273,7 @@ export function useMonBalance(address?: Address): bigint {
   useDemoState();
   const bal = useBalance({
     address,
+    chainId: monadTestnet.id,
     query: { enabled: Boolean(address), refetchInterval: 10_000 },
   });
   if (!isOnChain) return 5n * 10n ** 18n; // 5 MON in demo mode
@@ -285,10 +288,26 @@ export function useCashoutReserve(): bigint {
   useDemoState();
   const bal = useBalance({
     address: contracts.cashout,
+    chainId: monadTestnet.id,
     query: { enabled: isOnChain && Boolean(contracts.cashout), refetchInterval: 15_000 },
   });
   if (!isOnChain) return 100n * 10n ** 18n; // 100 MON in demo mode
   return bal.data?.value ?? 0n;
+}
+
+/** Full reserve state including loading status. */
+export function useCashoutReserveInfo(): { reserve: bigint; isLoading: boolean } {
+  useDemoState();
+  const bal = useBalance({
+    address: contracts.cashout,
+    chainId: monadTestnet.id,
+    query: { enabled: isOnChain && Boolean(contracts.cashout), refetchInterval: 15_000 },
+  });
+  if (!isOnChain) return { reserve: 100n * 10n ** 18n, isLoading: false };
+  return {
+    reserve: bal.data?.value ?? 0n,
+    isLoading: bal.isLoading && bal.data === undefined,
+  };
 }
 
 /** Portfolio: every market the wallet holds (or held) a position in. */
@@ -325,7 +344,7 @@ export function usePortfolio(address?: Address) {
 export function useLeaderboard(): LeaderboardEntry[] {
   const demo = useDemoState();
   const { data: markets } = useMarkets();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: monadTestnet.id });
   const [onChain, setOnChain] = useState<LeaderboardEntry[]>([]);
 
   useEffect(() => {
@@ -403,9 +422,10 @@ export type TxState = "idle" | "approving" | "pending" | "confirming" | "success
 
 export function useMarketActions() {
   const { address } = useWallet();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: monadTestnet.id });
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
+  const { sendTransactionAsync } = useSendTransaction();
   const [status, setStatus] = useState<TxState>("idle");
   const [hash, setHash] = useState<string | undefined>();
 
@@ -612,13 +632,22 @@ export function useMarketActions() {
           })) as bigint;
 
           if (currentBal > 0n) {
-            await ensureAllowance(currentBal, contracts.cashout);
-            return writeContractAsync({
-              abi: cashoutAbi,
+            // Check contract MON reserve first to avoid guaranteed InsufficientReserve revert
+            const contractMonBal = await publicClient.getBalance({
               address: contracts.cashout,
-              functionName: "cashout",
-              args: [currentBal],
             });
+            const maxClout = contractMonBal * CLOUT_PER_MON;
+            const toCashout = currentBal > maxClout ? maxClout : currentBal;
+
+            if (toCashout > 0n) {
+              await ensureAllowance(toCashout, contracts.cashout);
+              return writeContractAsync({
+                abi: cashoutAbi,
+                address: contracts.cashout,
+                functionName: "cashout",
+                args: [toCashout],
+              });
+            }
           }
         }
         return claimHash;
@@ -643,6 +672,20 @@ export function useMarketActions() {
     [address, run, writeContractAsync],
   );
 
+  const fundReserve = useCallback(
+    (monAmount: bigint) =>
+      run("fundReserve", async () => {
+        if (!address) throw new Error("Connect your wallet first.");
+        if (!isOnChain) return undefined;
+        if (!contracts.cashout) throw new Error("Cashout contract not configured.");
+        return sendTransactionAsync({
+          to: contracts.cashout,
+          value: monAmount,
+        });
+      }),
+    [address, run, sendTransactionAsync],
+  );
+
   return {
     status,
     hash,
@@ -652,6 +695,7 @@ export function useMarketActions() {
     claimAndCashout,
     settle,
     cashout,
+    fundReserve,
     faucet,
     reset: () => setStatus("idle"),
   };

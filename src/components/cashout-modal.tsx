@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useCashoutReserve,
+  useCashoutReserveInfo,
   useMarketActions,
   useMonBalance,
   useTokenBalance,
@@ -39,9 +39,10 @@ export function CashoutModal({
   const wallet = useWallet();
   const cloutBalance = useTokenBalance(wallet.address);
   const monBalance = useMonBalance(wallet.address);
-  const reserve = useCashoutReserve();
-  const { cashout, status } = useMarketActions();
+  const { reserve, isLoading: reserveLoading } = useCashoutReserveInfo();
+  const { cashout, fundReserve, status } = useMarketActions();
   const [amount, setAmount] = useState("");
+  const [toppingUp, setToppingUp] = useState(false);
 
   const busy = status === "pending" || status === "confirming" || status === "approving";
 
@@ -58,15 +59,28 @@ export function CashoutModal({
   // Maximum CLOUT that can be cashed out given the current reserve
   const maxCloutFromReserve = reserve * CLOUT_PER_MON;
 
+  // Maximum CLOUT the user can actually cash out right now
+  const maxAvailableClout = reserveLoading
+    ? cloutBalance
+    : maxCloutFromReserve < cloutBalance
+      ? maxCloutFromReserve
+      : cloutBalance;
+
   const error = !wallet.isConnected
     ? null
-    : parsedClout > cloutBalance
-      ? "Amount exceeds your CLOUT balance"
-      : parsedClout > 0n && parsedClout < 10n ** 18n
-        ? "Minimum cashout is 1 CLOUT"
-        : parsedClout > 0n && parsedClout > maxCloutFromReserve
-          ? `Exceeds contract reserve. Max: ${formatToken(maxCloutFromReserve)} CLOUT`
-          : null;
+    : wallet.wrongNetwork
+      ? "Switch to Monad Testnet to cash out"
+      : reserveLoading
+        ? null
+        : reserve === 0n
+          ? "The cashout vault has 0 MON remaining. Top up the vault below or wait for liquidity."
+          : parsedClout > cloutBalance
+            ? "Amount exceeds your CLOUT balance"
+            : parsedClout > 0n && parsedClout < 10n ** 18n
+              ? "Minimum cashout is 1 CLOUT"
+              : parsedClout > 0n && parsedClout > maxCloutFromReserve
+                ? `Exceeds contract reserve. Max available: ${formatToken(maxCloutFromReserve)} CLOUT`
+                : null;
 
   async function handleCashout() {
     if (!wallet.isConnected) {
@@ -76,7 +90,11 @@ export function CashoutModal({
       await wallet.connect().catch(() => {});
       return;
     }
-    if (parsedClout <= 0n || error) return;
+    if (wallet.wrongNetwork) {
+      await wallet.switchToMonad().catch(() => {});
+      return;
+    }
+    if (parsedClout <= 0n || error || reserve === 0n) return;
 
     try {
       await cashout(parsedClout);
@@ -114,28 +132,90 @@ export function CashoutModal({
             </span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Native MON is sent directly to your connected Monad address for free transfer and withdrawal.
+            Native MON is sent directly to your connected Monad address for free transfer and
+            withdrawal.
           </p>
         </div>
 
-        {/* Reserve Warning */}
-        {reserve < 10n ** 18n && (
-          <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold">Reserve Alert</p>
-              <p className="mt-0.5 text-[11px] text-destructive/90 leading-tight">
-                Cashout contract reserve is low ({formatToken(reserve, 4)} MON remaining). Cashouts are capped at {formatToken(maxCloutFromReserve)} CLOUT.
-              </p>
-            </div>
+        {/* Wrong Network Banner */}
+        {wallet.isConnected && wallet.wrongNetwork && (
+          <div className="flex items-center justify-between rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+            <span>Connected to wrong network</span>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-7 text-xs font-semibold"
+              onClick={() => void wallet.switchToMonad()}
+            >
+              Switch to Monad
+            </Button>
           </div>
         )}
+
+        {/* Reserve Warning */}
+        {reserveLoading ? (
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 p-3 text-xs text-muted-foreground">
+            <Loader2 className="size-4 animate-spin shrink-0 text-primary" />
+            <span>Checking contract reserve…</span>
+          </div>
+        ) : reserve < 10n ** 18n ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive space-y-2.5">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">Reserve Alert</p>
+                <p className="mt-0.5 text-[11px] text-destructive/90 leading-tight">
+                  {reserve === 0n
+                    ? "Cashout contract has 0 MON remaining. All reserve liquidity was cashed out. Top up the reserve below to enable conversions."
+                    : `Cashout contract reserve is low (${formatToken(reserve, 4)} MON remaining). Cashouts are capped at ${formatToken(maxCloutFromReserve)} CLOUT.`}
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Top-Up for testing */}
+            {wallet.isConnected && !wallet.wrongNetwork && (
+              <div className="pt-2 border-t border-destructive/20 flex flex-col gap-1.5">
+                <span className="text-[11px] font-medium text-foreground">
+                  Top up vault liquidity directly from your wallet:
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 5].map((mon) => (
+                    <Button
+                      key={mon}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={busy || toppingUp}
+                      className="h-7 px-2.5 text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/10 flex-1"
+                      onClick={async () => {
+                        setToppingUp(true);
+                        try {
+                          await fundReserve(BigInt(mon) * 10n ** 18n);
+                          toast.success(`Successfully deposited ${mon} MON into cashout vault!`);
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Top-up failed");
+                        } finally {
+                          setToppingUp(false);
+                        }
+                      }}
+                    >
+                      {toppingUp ? <Loader2 className="size-3 animate-spin mr-1" /> : "+"}
+                      {mon} MON ({formatToken(BigInt(mon * 2000))} CLOUT)
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           {/* Balances Display */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="rounded-xl bg-surface-2 p-2.5 min-w-0">
-              <span className="text-[11px] text-muted-foreground block truncate">CLOUT in Wallet</span>
+              <span className="text-[11px] text-muted-foreground block truncate">
+                CLOUT in Wallet
+              </span>
               <p className="numeric mt-0.5 text-sm sm:text-base font-bold text-foreground truncate">
                 {formatToken(cloutBalance)} CLOUT
               </p>
@@ -144,7 +224,9 @@ export function CashoutModal({
               </p>
             </div>
             <div className="rounded-xl bg-surface-2 p-2.5 min-w-0">
-              <span className="text-[11px] text-muted-foreground block truncate">Native MON in Wallet</span>
+              <span className="text-[11px] text-muted-foreground block truncate">
+                Native MON in Wallet
+              </span>
               <p className="numeric mt-0.5 text-sm sm:text-base font-bold text-primary truncate">
                 {formatToken(monBalance, 4)} MON
               </p>
@@ -165,10 +247,15 @@ export function CashoutModal({
               </Label>
               <button
                 type="button"
-                className="text-xs font-semibold text-primary hover:underline"
-                onClick={() => setAmount(formatToken(cloutBalance).replace(/,/g, ""))}
+                className="text-xs font-semibold text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+                disabled={reserve === 0n}
+                onClick={() => setAmount(formatToken(maxAvailableClout).replace(/,/g, ""))}
               >
-                Max ({formatToken(cloutBalance)})
+                {reserve === 0n
+                  ? "Max Available (0 CLOUT - Reserve Empty)"
+                  : cloutBalance > maxCloutFromReserve
+                    ? `Max Available (${formatToken(maxAvailableClout)})`
+                    : `Max (${formatToken(cloutBalance)})`}
               </button>
             </div>
             <div className="relative">
@@ -176,6 +263,7 @@ export function CashoutModal({
                 id="cashout-amount"
                 inputMode="decimal"
                 value={amount}
+                disabled={reserve === 0n}
                 onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                 placeholder="0.0"
                 className="numeric pr-16 text-base sm:text-lg font-bold h-11"
@@ -191,6 +279,7 @@ export function CashoutModal({
                   type="button"
                   size="sm"
                   variant="outline"
+                  disabled={reserve === 0n}
                   className="text-xs h-9"
                   onClick={() => setAmount(preset)}
                 >
@@ -201,8 +290,9 @@ export function CashoutModal({
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={reserve === 0n}
                 className="text-xs h-9 font-semibold text-primary"
-                onClick={() => setAmount(formatToken(cloutBalance).replace(/,/g, ""))}
+                onClick={() => setAmount(formatToken(maxAvailableClout).replace(/,/g, ""))}
               >
                 Max
               </Button>
@@ -237,7 +327,11 @@ export function CashoutModal({
 
         <Button
           onClick={() => void handleCashout()}
-          disabled={busy || (wallet.isConnected && (parsedClout <= 0n || Boolean(error)))}
+          disabled={
+            busy ||
+            toppingUp ||
+            (wallet.isConnected && (parsedClout <= 0n || Boolean(error) || reserve === 0n))
+          }
           size="lg"
           className="w-full font-semibold h-12 text-sm sm:text-base mt-1"
         >
@@ -252,6 +346,11 @@ export function CashoutModal({
             <>
               <Wallet className="mr-2 size-4 shrink-0" />
               Connect Wallet to Cash Out
+            </>
+          ) : reserve === 0n ? (
+            <>
+              <AlertTriangle className="mr-2 size-4 shrink-0 text-destructive" />
+              Vault Reserve Empty (0 MON Available)
             </>
           ) : (
             <>

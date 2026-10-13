@@ -50,7 +50,6 @@ Users stake **`CLOUT`** tokens on market outcomes. Because markets use a **parim
 - **Interactive 3D Visuals**: Real-time reactive WebGL hero visual built with Three.js and React Three Fiber.
 - **Trader Portfolio & Leaderboard**: Track open bets, claim winnings, review historical win-rates, and inspect profit rankings.
 
-
 ## How It Works
 
 ### Market Lifecycle
@@ -99,11 +98,11 @@ The **`CloutCashout`** contract maintains a native MON liquidity reserve. When u
 
 All contracts are deployed on **Monad Testnet (Chain ID: 10143)**:
 
-| Contract                   | Address                                      | Explorer Link                                                                                            
+| Contract | Address | Explorer Link  
 | **`CloutToken` (`CLOUT`)** | `0x903f3BA0c170bFD5D280983c0bC1121C30CF71e4` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0x903f3BA0c170bFD5D280983c0bC1121C30CF71e4) |
-| **`AttentionOracleV2`**    | `0x6dc4934d9299E3A039161cA851395f0c49F4E667` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0x6dc4934d9299E3A039161cA851395f0c49F4E667) |
-| **`CloutChaseMarket`**     | `0xCfd50960286Cd5d0b2BaDcD75B85692e58961fc6` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0xCfd50960286Cd5d0b2BaDcD75B85692e58961fc6) |
-| **`CloutCashout`**         | `0x209756F00029c0a8432bC12B823F278ec10735D3` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0x209756F00029c0a8432bC12B823F278ec10735D3) |
+| **`AttentionOracleV2`** | `0x6dc4934d9299E3A039161cA851395f0c49F4E667` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0x6dc4934d9299E3A039161cA851395f0c49F4E667) |
+| **`CloutChaseMarket`** | `0xCfd50960286Cd5d0b2BaDcD75B85692e58961fc6` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0xCfd50960286Cd5d0b2BaDcD75B85692e58961fc6) |
+| **`CloutCashout`** | `0x209756F00029c0a8432bC12B823F278ec10735D3` | [View on Monad Explorer](https://testnet.monadexplorer.com/address/0x209756F00029c0a8432bC12B823F278ec10735D3) |
 
 ---
 
@@ -239,14 +238,13 @@ After deployment, copy the output addresses (`VITE_*`) into the root `.env` file
 
 To add Monad Testnet manually to your wallet:
 
- Property             Value                               
-   
- **Network Name**     Monad Testnet                       
- **Chain ID**         `10143`                             
- **Currency Symbol**  `MON`                               
- **RPC URL**          `https://testnet-rpc.monad.xyz`     
- **Block Explorer**   `https://testnet.monadexplorer.com` 
+Property Value
 
+**Network Name** Monad Testnet  
+**Chain ID** `10143`  
+**Currency Symbol** `MON`  
+**RPC URL** `https://testnet-rpc.monad.xyz`  
+**Block Explorer** `https://testnet.monadexplorer.com`
 
 ## License
 

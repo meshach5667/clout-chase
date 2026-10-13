@@ -63,7 +63,11 @@ function LeaderboardPage() {
                 </span>
                 {index === 0 && <Crown className="size-4 text-primary shrink-0" />}
                 <span className="numeric text-sm font-medium">{shortenAddress(entry.address)}</span>
-                {isYou && <Badge variant="outline" className="text-xs">You</Badge>}
+                {isYou && (
+                  <Badge variant="outline" className="text-xs">
+                    You
+                  </Badge>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2 sm:gap-6 text-right text-xs sm:text-sm pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
@@ -77,7 +81,9 @@ function LeaderboardPage() {
                   <p className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground">
                     Staked
                   </p>
-                  <p className="numeric font-medium truncate">{formatToken(entry.totalStaked, 0)} CLOUT</p>
+                  <p className="numeric font-medium truncate">
+                    {formatToken(entry.totalStaked, 0)} CLOUT
+                  </p>
                   <p className="numeric text-[10px] text-muted-foreground truncate">
                     ${formatCloutUsd(entry.totalStaked)}
                   </p>

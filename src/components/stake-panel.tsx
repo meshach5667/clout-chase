@@ -31,8 +31,9 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
   const payout = previewPayout(market.yesPool, market.noPool, side === "yes", parsed);
   const busy = status === "pending" || status === "confirming" || status === "approving";
 
-  const error =
-    parsed > 0n && parsed < 10n ** 18n
+  const error = !wallet.isConnected
+    ? null
+    : parsed > 0n && parsed < 10n ** 18n
       ? "Minimum stake is 1 CLOUT"
       : parsed > balance
         ? "Not enough CLOUT in your wallet"
@@ -103,7 +104,10 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-1">
-          <Label htmlFor="stake-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <Label
+            htmlFor="stake-amount"
+            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Stake
           </Label>
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -112,9 +116,7 @@ export function StakePanel({ market, now }: { market: Market; now: number }) {
                 ≈ {formatCloutMon(parsed)} MON (${formatCloutUsd(parsed)})
               </span>
             )}
-            <span className="numeric text-muted-foreground">
-              Bal: {formatToken(balance)}
-            </span>
+            <span className="numeric text-muted-foreground">Bal: {formatToken(balance)}</span>
           </div>
         </div>
         <Input

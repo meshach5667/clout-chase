@@ -105,7 +105,9 @@ export function MarketCard({ market, now }: { market: Market; now: number }) {
         <span className="flex items-center gap-1.5 min-w-0">
           <TrendingUp className="size-3.5 shrink-0" />
           <span className="numeric font-medium truncate">{formatToken(total)} CLOUT</span>
-          <span className="text-[11px] font-semibold text-yes shrink-0">(${formatCloutUsd(total)})</span>
+          <span className="text-[11px] font-semibold text-yes shrink-0">
+            (${formatCloutUsd(total)})
+          </span>
         </span>
         <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
           <span className="flex items-center gap-1.5">

@@ -165,7 +165,9 @@ function MarketsPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="panel p-2.5 sm:p-4 min-w-0">
-      <dt className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground truncate">{label}</dt>
+      <dt className="text-[10px] sm:text-[11px] uppercase tracking-widest text-muted-foreground truncate">
+        {label}
+      </dt>
       <dd className="numeric mt-1 text-base sm:text-xl font-bold truncate">{value}</dd>
     </div>
   );
