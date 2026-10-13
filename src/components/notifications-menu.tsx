@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import { Bell, Check, Flame, Sparkles, Trophy, X } from "lucide-react";
+import { useState } from "react";
+import { Bell, Flame, Sparkles, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -19,43 +18,21 @@ export type AppNotification = {
   type: "spotlight" | "settlement" | "challenge" | "social";
 };
 
-const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: "notif-1",
-    title: "Creator Spotlight Alert",
-    message: "@mesh has been recognized as Creator of the Week with 82% win rate!",
-    time: "2h ago",
-    read: false,
-    type: "spotlight",
-  },
-  {
-    id: "notif-2",
-    title: "Market Resolution",
-    message: "#MonadSzn reached 1.2M attention threshold and settled YES on Monad.",
-    time: "5h ago",
-    read: false,
-    type: "settlement",
-  },
-  {
-    id: "notif-3",
-    title: "Challenge Progress",
-    message: "You completed 'The Contrarian' challenge! Claim +100 Clout points.",
-    time: "1d ago",
-    read: false,
-    type: "challenge",
-  },
-];
-
 const NOTIFICATIONS_STORAGE_KEY = "cloutchase.notifications.v1";
 
 export function NotificationsMenu({ className }: { className?: string }) {
   const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-    if (typeof window === "undefined") return INITIAL_NOTIFICATIONS;
+    if (typeof window === "undefined") return [];
     try {
       const stored = window.localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-      return stored ? (JSON.parse(stored) as AppNotification[]) : INITIAL_NOTIFICATIONS;
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return (parsed as AppNotification[]).filter(
+        (notification) => !["notif-1", "notif-2", "notif-3"].includes(notification.id),
+      );
     } catch {
-      return INITIAL_NOTIFICATIONS;
+      return [];
     }
   });
 
@@ -140,7 +117,9 @@ export function NotificationsMenu({ className }: { className?: string }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-xs font-semibold text-foreground truncate">{notif.title}</p>
-                    <span className="text-[10px] text-muted-foreground font-mono">{notif.time}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {notif.time}
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
                     {notif.message}

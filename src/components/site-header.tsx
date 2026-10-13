@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Activity } from "lucide-react";
 
 import { WalletButton } from "@/components/wallet-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -17,10 +16,11 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Activity className="size-4" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">CloutChase</span>
+          <img
+            src="/csLogo.png"
+            alt="CloutChase"
+            className="h-8 w-auto max-w-[145px] rounded-md bg-white px-1 object-contain"
+          />
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">

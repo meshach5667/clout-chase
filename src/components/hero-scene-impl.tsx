@@ -25,7 +25,11 @@ function useTokenColors() {
           ctx.fillStyle = resolved;
           ctx.fillRect(0, 0, 1, 1);
           const d = ctx.getImageData(0, 0, 1, 1).data;
-          return new THREE.Color((d[0] ?? 0) / 255, (d[1] ?? 0) / 255, (d[2] ?? 0) / 255).getStyle();
+          return new THREE.Color(
+            (d[0] ?? 0) / 255,
+            (d[1] ?? 0) / 255,
+            (d[2] ?? 0) / 255,
+          ).getStyle();
         } catch {
           return fallback;
         }

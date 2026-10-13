@@ -48,9 +48,7 @@ export function applyTheme(mode: ThemeMode) {
     // Ignore storage errors
   }
 
-  window.dispatchEvent(
-    new CustomEvent(THEME_CHANGE_EVENT, { detail: { mode, resolved } }),
-  );
+  window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { mode, resolved } }));
 }
 
 export function subscribeToThemeChange(callback: () => void): () => void {

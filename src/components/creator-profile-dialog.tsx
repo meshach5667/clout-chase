@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Flame, Shield, TrendingUp, Trophy, UserCheck, UserPlus, X } from "lucide-react";
+import {
+  CheckCircle2,
+  Flame,
+  Shield,
+  TrendingUp,
+  Trophy,
+  UserCheck,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   type CreatorProfile,
@@ -9,12 +18,7 @@ import {
 } from "@/lib/creators/reputation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function CreatorProfileDialog({
   creator,
@@ -79,7 +83,8 @@ export function CreatorProfileDialog({
                     {creator.tier} Tier
                   </Badge>
                   <span className="text-[11px] font-mono text-muted-foreground">
-                    Clout Score: <span className="font-bold text-foreground">{creator.cloutScore}</span>
+                    Clout Score:{" "}
+                    <span className="font-bold text-foreground">{creator.cloutScore}</span>
                   </span>
                 </div>
               </div>

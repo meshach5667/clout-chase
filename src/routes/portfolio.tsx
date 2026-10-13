@@ -6,7 +6,10 @@ import { formatUnits } from "viem";
 
 import { CashoutModal } from "@/components/cashout-modal";
 import { StatusBadge } from "@/components/market-bits";
-import { SharePredictionModal, type SharePredictionData } from "@/components/share-prediction-modal";
+import {
+  SharePredictionModal,
+  type SharePredictionData,
+} from "@/components/share-prediction-modal";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
 import {
@@ -189,8 +192,6 @@ function PortfolioPage() {
                   setShareData({
                     market,
                     side: side as "YES" | "NO",
-                    stakeAmount: size,
-                    oddsAtCall: 24,
                     userAddress: wallet.address,
                   })
                 }

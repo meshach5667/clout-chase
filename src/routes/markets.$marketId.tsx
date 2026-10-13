@@ -4,7 +4,10 @@ import { ArrowLeft, ExternalLink, Loader2, Share2, ShieldCheck } from "lucide-re
 import { toast } from "sonner";
 
 import { OddsRail, StatusBadge } from "@/components/market-bits";
-import { SharePredictionModal, type SharePredictionData } from "@/components/share-prediction-modal";
+import {
+  SharePredictionModal,
+  type SharePredictionData,
+} from "@/components/share-prediction-modal";
 import { StakePanel } from "@/components/stake-panel";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
@@ -166,8 +169,6 @@ function MarketDetail() {
                     setShareData({
                       market,
                       side: side as "YES" | "NO",
-                      stakeAmount: size,
-                      oddsAtCall: 24,
                       userAddress: wallet.address,
                     });
                   }}
